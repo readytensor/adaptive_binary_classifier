@@ -70,6 +70,10 @@ adaptable_binary_classifier/
 ├── tests/
 │   ├── integration_tests/
 │   ├── performance_tests/
+│   ├── test_resources/
+│   ├── test_results/
+│   │   ├── coverage_tests/
+│   │   └── performance_tests/
 │   └── unit_tests/
 │       ├── (mirrors /src structure)
 │       └── ...
@@ -117,7 +121,7 @@ adaptable_binary_classifier/
   - **`check_preprocessing.py`**: This is a temporary script created to check the preprocessing pipeline. It will be removed in module 2 of this series.
 
   - **`check_schema.py`**: This is also a temporary script created to check the schema. It will be removed in module 2 of this series.
-  -
+
   - **`predict.py`**: This script is used to run batch predictions using the trained model. It loads the artifacts and creates and saves the predictions in a file called `predictions.csv` in the path `./model_inputs_outputs/outputs/predictions/`.
 
   - **`serve.py`**: This script is used to serve the model as a REST API. It loads the artifacts and creates a FastAPI server to serve the model. It provides 3 endpoints: `/ping`, `/infer`, and `/explain`. The `/ping` endpoint is used to check if the server is running. The `/infer` endpoint is used to make predictions. The `/explain` endpoint is used to get local explanations for the predictions.
