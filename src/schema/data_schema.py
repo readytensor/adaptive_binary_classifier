@@ -2,6 +2,7 @@ from typing import Dict, List, Tuple
 
 import joblib
 
+from data_models.schema_validator import validate_schema_dict
 from utils import read_json_as_dict
 
 
@@ -298,7 +299,8 @@ class BinaryClassificationSchema:
 
 def load_json_data_schema(schema_dir_path: str) -> BinaryClassificationSchema:
     """
-    Load the JSON file schema into a dictionary and instantiate the schema provider.
+    Load the JSON file schema into a dictionary, validate the schema dict for
+    its correctness, and use the validated schema to instantiate the schema provider.
 
     Args:
     - schema_dir_path (str): Path from where to read the schema json file.
@@ -307,7 +309,8 @@ def load_json_data_schema(schema_dir_path: str) -> BinaryClassificationSchema:
         BinaryClassificationSchema: An instance of the BinaryClassificationSchema.
     """
     schema_dict = read_json_as_dict(input_path=schema_dir_path)
-    data_schema = BinaryClassificationSchema(schema_dict)
+    validated_schema_dict = validate_schema_dict(schema_dict=schema_dict)
+    data_schema = BinaryClassificationSchema(validated_schema_dict)
     return data_schema
 
 

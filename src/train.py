@@ -1,7 +1,9 @@
 import argparse
 
 from config import paths
+from data_models.data_validator import validate_data
 from hyperparameter_tuning.tuner import tune_hyperparameters
+from logger import get_logger, log_error
 from prediction.predictor_model import (
     evaluate_predictor_model,
     save_predictor_model,
@@ -16,6 +18,8 @@ from preprocessing.preprocess import (
 from schema.data_schema import load_json_data_schema, save_schema
 from utils import read_csv_in_directory, read_json_as_dict, set_seeds, split_train_val
 from xai.explainer import fit_and_save_explainer
+
+logger = get_logger(task_name="train")
 
 
 def run_training(
@@ -64,80 +68,112 @@ def run_training(
         None
     """
 
-    # load and save schema
-    data_schema = load_json_data_schema(input_schema_dir)
-    save_schema(schema=data_schema, output_path=saved_schema_path)
+    try:
 
-    # load model config
-    model_config = read_json_as_dict(model_config_file_path)
+        logger.info("Starting training...")
+        # load and save schema
+        logger.info("Loading and saving schema...")
+        data_schema = load_json_data_schema(input_schema_dir)
+        save_schema(schema=data_schema, output_path=saved_schema_path)
 
-    # set seeds
-    set_seeds(seed_value=model_config["seed_value"])
+        # load model config
+        logger.info("Loading model config...")
+        model_config = read_json_as_dict(model_config_file_path)
 
-    # load train data
-    train_data = read_csv_in_directory(file_dir_path=train_dir)
+        # set seeds
+        logger.info("Setting seeds...")
+        set_seeds(seed_value=model_config["seed_value"])
 
-    # split train data into training and validation sets
-    train_split, val_split = split_train_val(
-        train_data, val_pct=model_config["validation_split"]
-    )
+        # load train data
+        logger.info("Loading train data...")
+        train_data = read_csv_in_directory(file_dir_path=train_dir)
 
-    # fit and transform using pipeline and target encoder, then save them
-    pipeline, target_encoder = train_pipeline_and_target_encoder(
-        data_schema, train_split, pipeline_config_file_path
-    )
-    transformed_train_inputs, transformed_train_targets = transform_data(
-        pipeline, target_encoder, train_split
-    )
-    transformed_val_inputs, transformed_val_labels = transform_data(
-        pipeline, target_encoder, val_split
-    )
-    balanced_train_inputs, balanced_train_labels = handle_class_imbalance(
-        transformed_train_inputs, transformed_train_targets
-    )
-    save_pipeline_and_target_encoder(
-        pipeline, target_encoder, pipeline_file_path, target_encoder_file_path
-    )
-
-    # hyperparameter tuning + training the model
-    if run_tuning:
-        tuned_hyperparameters = tune_hyperparameters(
-            train_X=balanced_train_inputs,
-            train_y=balanced_train_labels,
-            valid_X=transformed_val_inputs,
-            valid_y=transformed_val_labels,
-            hpt_results_file_path=hpt_results_file_path,
-            is_minimize=False,
-            default_hyperparameters_file_path=default_hyperparameters_file_path,
-            hpt_specs_file_path=hpt_specs_file_path,
-        )
-        predictor = train_predictor_model(
-            balanced_train_inputs,
-            balanced_train_labels,
-            hyperparameters=tuned_hyperparameters,
-        )
-    else:
-        # uses default hyperparameters to train model
-        default_hyperparameters = read_json_as_dict(default_hyperparameters_file_path)
-        predictor = train_predictor_model(
-            balanced_train_inputs, balanced_train_labels, default_hyperparameters
+        # validate the data
+        logger.info("Validating train data...")
+        validated_data = validate_data(
+            data=train_data, data_schema=data_schema, is_train=True
         )
 
-    # save predictor model
-    save_predictor_model(predictor, predictor_file_path)
+        # split train data into training and validation sets
+        logger.info("Performing train/validation split...")
+        train_split, val_split = split_train_val(
+            validated_data, val_pct=model_config["validation_split"]
+        )
 
-    # calculate and print validation accuracy
-    val_accuracy = evaluate_predictor_model(
-        predictor, transformed_val_inputs, transformed_val_labels
-    )
-    print(f"Validation data accuracy: {val_accuracy}")
+        # fit and transform using pipeline and target encoder, then save them
+        logger.info("Training preprocessing pipeline and label encoder...")
+        pipeline, target_encoder = train_pipeline_and_target_encoder(
+            data_schema, train_split, pipeline_config_file_path
+        )
+        transformed_train_inputs, transformed_train_targets = transform_data(
+            pipeline, target_encoder, train_split
+        )
+        transformed_val_inputs, transformed_val_labels = transform_data(
+            pipeline, target_encoder, val_split
+        )
+        logger.info("Handling class imbalance...")
+        balanced_train_inputs, balanced_train_labels = handle_class_imbalance(
+            transformed_train_inputs, transformed_train_targets
+        )
+        logger.info("Saving pipeline and label encoder...")
+        save_pipeline_and_target_encoder(
+            pipeline, target_encoder, pipeline_file_path, target_encoder_file_path
+        )
 
-    # fit and save explainer
-    fit_and_save_explainer(
-        transformed_train_inputs, explainer_config_file_path, explainer_file_path
-    )
+        # hyperparameter tuning + training the model
+        if run_tuning:
+            logger.info("Tuning hyperparameters...")
+            tuned_hyperparameters = tune_hyperparameters(
+                train_X=balanced_train_inputs,
+                train_y=balanced_train_labels,
+                valid_X=transformed_val_inputs,
+                valid_y=transformed_val_labels,
+                hpt_results_file_path=hpt_results_file_path,
+                is_minimize=False,
+                default_hyperparameters_file_path=default_hyperparameters_file_path,
+                hpt_specs_file_path=hpt_specs_file_path,
+            )
+            logger.info("Training classifier...")
+            predictor = train_predictor_model(
+                balanced_train_inputs,
+                balanced_train_labels,
+                hyperparameters=tuned_hyperparameters,
+            )
+        else:
+            # uses default hyperparameters to train model
+            logger.info("Training classifier...")
+            default_hyperparameters = read_json_as_dict(
+                default_hyperparameters_file_path
+            )
+            predictor = train_predictor_model(
+                balanced_train_inputs, balanced_train_labels, default_hyperparameters
+            )
 
-    print("Training completed successfully")
+        # save predictor model
+        logger.info("Saving classifier...")
+        save_predictor_model(predictor, predictor_file_path)
+
+        # calculate and print validation accuracy
+        logger.info("Calculating accuracy on validaton data...")
+        val_accuracy = evaluate_predictor_model(
+            predictor, transformed_val_inputs, transformed_val_labels
+        )
+        logger.info(f"Validation data accuracy: {val_accuracy}")
+
+        # fit and save explainer
+        logger.info("Fitting and saving explainer...")
+        fit_and_save_explainer(
+            transformed_train_inputs, explainer_config_file_path, explainer_file_path
+        )
+
+        logger.info("Training completed successfully")
+
+    except Exception as exc:
+        err_msg = "Error occurred during training."
+        # Log the error
+        logger.error(f"{err_msg} Error: {str(exc)}")
+        # Log the error to the separate logging file 'train-error.log'
+        log_error(message=err_msg, error=exc, error_fpath=paths.TRAIN_ERROR_FILE_PATH)
 
 
 def parse_arguments() -> argparse.Namespace:

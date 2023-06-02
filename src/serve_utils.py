@@ -8,12 +8,16 @@ import pandas as pd
 from starlette.requests import Request
 
 from config import paths
+from data_models.data_validator import validate_data
+from logger import get_logger, log_error
 from predict import create_predictions_dataframe
 from prediction.predictor_model import load_predictor_model, predict_with_model
 from preprocessing.preprocess import load_pipeline_and_target_encoder, transform_data
 from schema.data_schema import load_saved_schema
 from utils import read_json_as_dict
 from xai.explainer import load_explainer
+
+logger = get_logger(task_name="serve")
 
 
 class ModelResources:
@@ -56,14 +60,22 @@ def get_model_resources(
     Returns:
         Loaded ModelResources object
     """
-    model_resources = ModelResources(
-        saved_schema_path,
-        model_config_file_path,
-        pipeline_file_path,
-        target_encoder_file_path,
-        predictor_file_path,
-        explainer_file_path,
-    )
+    try:
+        model_resources = ModelResources(
+            saved_schema_path,
+            model_config_file_path,
+            pipeline_file_path,
+            target_encoder_file_path,
+            predictor_file_path,
+            explainer_file_path,
+        )
+    except Exception as exc:
+        err_msg = "Error occurred loading model for serving."
+        # Log the error to the general logging file 'serve.log'
+        logger.error(f"{err_msg} Error: {str(exc)}")
+        # Log the error to the separate logging file 'serve-error.log'
+        log_error(message=err_msg, error=exc, error_fpath=paths.SERVE_ERROR_FILE_PATH)
+        raise exc
     return model_resources
 
 
@@ -94,12 +106,24 @@ async def transform_req_data_and_make_predictions(
             prediction response.
     """
     data = pd.DataFrame.from_records(request.dict()["instances"])
-    transformed_data, _ = transform_data(
-        model_resources.preprocessor, model_resources.target_encoder, data
+    logger.info(f"Predictions requested for {len(data)} samples...")
+
+    # validate the data
+    logger.info("Validating data...")
+    validated_data = validate_data(
+        data=data, data_schema=model_resources.data_schema, is_train=False
     )
+
+    logger.info("Transforming data sample(s)...")
+    transformed_data, _ = transform_data(
+        model_resources.preprocessor, model_resources.target_encoder, validated_data
+    )
+
+    logger.info("Making predictions...")
     predictions_arr = predict_with_model(
         model_resources.predictor_model, transformed_data, return_probs=True
     )
+    logger.info("Converting predictions array into dataframe...")
     predictions_df = create_predictions_dataframe(
         predictions_arr,
         model_resources.data_schema.target_classes,
@@ -108,6 +132,8 @@ async def transform_req_data_and_make_predictions(
         model_resources.data_schema.id,
         return_probs=True,
     )
+
+    logger.info("Converting predictions dataframe into response dictionary...")
     predictions_response = create_predictions_response(
         predictions_df, model_resources.data_schema, request_id
     )

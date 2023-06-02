@@ -9,6 +9,8 @@ This repository is a dockerized implementation of the random forest binary class
 - Hyperparameter-tuning using **scikit-optimize**
 - SHAP explainer using the **shap** package
 - **FASTAPI** inference service which provides endpoints for predictions and local explanations.
+- **Pydantic** data validation is used for the schema, training and test files, as well as the inference request data.
+- Error handling and logging using **Python's logging** module.
 - Comprehensive set of unit, integration, coverage and performance tests using **pytest**, **pytest-cov**.
 
 This repository is part of a tutorial series on Ready Tensor, a web platform for AI developers and users. The purpose of the tutorial series is to help AI developers create adaptable algorithm implementations that avoid hard-coding your logic to a specific dataset. This makes it easier to re-use your algorithms with new datasets in the future without requiring any code change.
