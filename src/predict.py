@@ -4,10 +4,14 @@ import numpy as np
 import pandas as pd
 
 from config import paths
+from data_models.data_validator import validate_data
+from logger import get_logger, log_error
 from prediction.predictor_model import load_predictor_model, predict_with_model
 from preprocessing.preprocess import load_pipeline_and_target_encoder, transform_data
 from schema.data_schema import load_saved_schema
 from utils import read_csv_in_directory, read_json_as_dict, save_dataframe_as_csv
+
+logger = get_logger(task_name="predict")
 
 
 def create_predictions_dataframe(
@@ -83,47 +87,63 @@ def run_batch_predictions(
         predictions_file_path (str): Path where the predictions file will be saved.
     """
 
-    print("Making batch predictions...")
+    try:
+        logger.info("Making batch predictions...")
 
-    # Load schema
-    data_schema = load_saved_schema(saved_schema_path)
+        logger.info("Loading schema...")
+        data_schema = load_saved_schema(saved_schema_path)
 
-    # load model config
-    model_config = read_json_as_dict(model_config_file_path)
+        logger.info("Loading model config...")
+        model_config = read_json_as_dict(model_config_file_path)
 
-    # load prediction data
-    test_data = read_csv_in_directory(file_dir_path=test_dir)
+        logger.info("Loading prediction input data...")
+        test_data = read_csv_in_directory(file_dir_path=test_dir)
 
-    # Load pipeline and encoder
-    preprocessor, target_encoder = load_pipeline_and_target_encoder(
-        pipeline_file_path, target_encoder_file_path
-    )
+        # validate the data
+        logger.info("Validating prediction data...")
+        validated_test_data = validate_data(
+            data=test_data, data_schema=data_schema, is_train=False
+        )
 
-    # Transform prediction inputs
-    transformed_data, _ = transform_data(preprocessor, target_encoder, test_data)
+        logger.info("Loading pipeline and encoder...")
+        preprocessor, target_encoder = load_pipeline_and_target_encoder(
+            pipeline_file_path, target_encoder_file_path
+        )
 
-    # Loading predictor model
-    predictor_model = load_predictor_model(predictor_file_path)
+        logger.info("Transforming prediction inputs ...")
+        transformed_data, _ = transform_data(
+            preprocessor, target_encoder, validated_test_data
+        )
 
-    # Make predictions
-    predictions_arr = predict_with_model(
-        predictor_model, transformed_data, return_probs=True
-    )
+        logger.info("Loading predictor model...")
+        predictor_model = load_predictor_model(predictor_file_path)
 
-    # Transform predictions into dataframe
-    predictions_df = create_predictions_dataframe(
-        predictions_arr,
-        data_schema.target_classes,
-        model_config["prediction_field_name"],
-        test_data[data_schema.id],
-        data_schema.id,
-        return_probs=True,
-    )
+        logger.info("Making predictions...")
+        predictions_arr = predict_with_model(
+            predictor_model, transformed_data, return_probs=True
+        )
 
-    # Save predictions
-    save_dataframe_as_csv(dataframe=predictions_df, file_path=predictions_file_path)
+        logger.info("Transforming predictions into dataframe...")
+        predictions_df = create_predictions_dataframe(
+            predictions_arr,
+            data_schema.target_classes,
+            model_config["prediction_field_name"],
+            test_data[data_schema.id],
+            data_schema.id,
+            return_probs=True,
+        )
 
-    print("Batch predictions completed successfully")
+        logger.info("Saving predictions...")
+        save_dataframe_as_csv(dataframe=predictions_df, file_path=predictions_file_path)
+
+        logger.info("Batch predictions completed successfully")
+
+    except Exception as exc:
+        err_msg = "Error occurred during prediction."
+        # Log the error to the general logging file 'predict.log'
+        logger.error(f"{err_msg} Error: {str(exc)}")
+        # Log the error to the separate logging file 'predict-error.log'
+        log_error(message=err_msg, error=exc, error_fpath=paths.PREDICT_ERROR_FILE_PATH)
 
 
 if __name__ == "__main__":
