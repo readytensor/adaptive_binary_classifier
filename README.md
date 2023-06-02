@@ -1,4 +1,4 @@
-# adaptable_binary_classifier
+# Adaptable Binary Classifier Implementation
 
 ## Project Description
 
