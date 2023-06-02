@@ -10,6 +10,7 @@ This repository is a dockerized implementation of the random forest binary class
 - SHAP explainer using the **shap** package
 - **FASTAPI** inference service which provides endpoints for predictions and local explanations.
 - **Pydantic** data validation is used for the schema, training and test files, as well as the inference request data.
+- Error handling and logging using **Python's logging** module.
 - Comprehensive set of unit, integration, coverage and performance tests using **pytest**, **pytest-cov**.
 
 This repository is part of a tutorial series on Ready Tensor, a web platform for AI developers and users. The purpose of the tutorial series is to help AI developers create adaptable algorithm implementations that avoid hard-coding your logic to a specific dataset. This makes it easier to re-use your algorithms with new datasets in the future without requiring any code change.
@@ -90,7 +91,7 @@ adaptable_binary_classifier/
 
   - **`/model/artifacts`**: This directory is used to store the model artifacts, such as trained models and their parameters.
 
-  - **`/outputs`**: The outputs directory contains sub-directories for error logs, and hyperparameter tuning outputs, and prediction results. Note that model artifacts should not be saved in this directory. Instead, they should be saved in the `/model/artifacts` directory.
+  - **`/outputs`**: The outputs directory contains sub-directories for error logs, and hyperparameter tuning outputs, and prediction results.
 
 - **`requirements`**: This directory contains the requirements files. We have multiple requirements files for different purposes:
 
