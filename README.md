@@ -1,4 +1,4 @@
-# Adaptable Binary Classifier Implementation
+# Adaptive Binary Classifier Implementation
 
 ## Project Description
 
@@ -13,7 +13,7 @@ This repository is a dockerized implementation of the random forest binary class
 - Error handling and logging using **Python's logging** module.
 - Comprehensive set of unit, integration, coverage and performance tests using **pytest**, **pytest-cov**.
 
-This repository is part of a tutorial series on Ready Tensor, a web platform for AI developers and users. The purpose of the tutorial series is to help AI developers create adaptable algorithm implementations that avoid hard-coding your logic to a specific dataset. This makes it easier to re-use your algorithms with new datasets in the future without requiring any code change.
+This repository is part of a tutorial series on Ready Tensor, a web platform for AI developers and users. The purpose of the tutorial series is to help AI developers create adaptive algorithm implementations that avoid hard-coding your logic to a specific dataset. This makes it easier to re-use your algorithms with new datasets in the future without requiring any code change.
 
 The tutorial series is divided into 3 modules as follows:
 
@@ -21,7 +21,7 @@ The tutorial series is divided into 3 modules as follows:
 
    - **Creating Standardized Project Structure**: This tutorial will review the standardized project structure we will use in this series.
    - **Using Data Schemas**: This tutorial discusses how data schemas can be used to avoid hard-coding implementations to specific datasets.
-   - **Creating Adaptable Data Preprocessing-Pipelines**: In this tutorial, we cover how to create data preprocessing pipelines that can work with diverse set of algorithms such as tree-based models and neural networks.
+   - **Creating Adaptive Data Preprocessing-Pipelines**: In this tutorial, we cover how to create data preprocessing pipelines that can work with diverse set of algorithms such as tree-based models and neural networks.
    - **Building a Binary Classifier in Python**: This tutorial reviews a binary classifier model implementation which enables providing a common interface for various types of algorithms.
    - **Hyper-Parameter Tuning (HPT) Using SciKit-Optimize**: This tutorial covers how to use SciKit-Optimize to perform hyper-parameter tuning on ML models.
    - **Integrating FastAPI for Online Inference**: This tutorial covers how we can set up an inference service using FastAPI to provide online predictions from our machine learning model.
@@ -38,12 +38,12 @@ The tutorial series is divided into 3 modules as follows:
    - **Containerizing ML Models - The Model-as-a-Service pattern**: In this tutorial, we review how to containerize an ML model to make it easily portable and deployable in different environments. We will use the Model-as-a-Service pattern for deployment.
    - **Containerizing ML Models - The Hybrid Pattern**: In this tutorial, we cover how to containerize an ML model with Docker to include both training and inference services.
 
-This particular branch called [module-2-complete](https://github.com/readytensor/adaptable_binary_classifier/tree/module-2-complete) is the completion point of module 1 in the series. Note that this branch is not the ending point for this repository series. The final branch is [module-3-complete](https://github.com/readytensor/adaptable_binary_classifier/tree/module-3-complete) which is also merged with the `main` branch of this repository.
+This particular branch called [module-2-complete](https://github.com/readytensor/adaptive_binary_classifier/tree/module-2-complete) is the completion point of module 1 in the series. Note that this branch is not the ending point for this repository series. The final branch is [module-3-complete](https://github.com/readytensor/adaptive_binary_classifier/tree/module-3-complete) which is also merged with the `main` branch of this repository.
 
 ## Project Structure
 
 ```txt
-adaptable_binary_classifier/
+adaptive_binary_classifier/
 ├── examples/
 ├── model_inputs_outputs/
 │   ├── inputs/
