@@ -38,7 +38,7 @@ The tutorial series is divided into 3 modules as follows:
    - **Containerizing ML Models - The Model-as-a-Service pattern**: In this tutorial, we review how to containerize an ML model to make it easily portable and deployable in different environments. We will use the Model-as-a-Service pattern for deployment.
    - **Containerizing ML Models - The Hybrid Pattern**: In this tutorial, we cover how to containerize an ML model with Docker to include both training and inference services.
 
-This particular branch called [module-1-complete](https://github.com/readytensor/adaptable_binary_classifier/tree/module-1-complete) is the completion point of module 1 in the series. The module 1 start point is [here](https://github.com/readytensor/adaptable_binary_classifier/tree/module-1-start).
+This particular branch called [module-2-complete](https://github.com/readytensor/adaptable_binary_classifier/tree/module-2-complete) is the completion point of module 1 in the series. Note that this branch is not the ending point for this repository series. The final branch is [module-3-complete](https://github.com/readytensor/adaptable_binary_classifier/tree/module-3-complete) which is also merged with the `main` branch of this repository.
 
 ## Project Structure
 
