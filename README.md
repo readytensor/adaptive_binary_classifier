@@ -159,6 +159,10 @@ adaptable_binary_classifier/
 
 ## Usage
 
+### Preparing your data
+
+- If you plan to run this model implementation on your own binary classification dataset, you will need your training and testing data in a CSV format. Also, you will need to create a schema file as per the Ready Tensor specifications. The schema is in JSON format, and it's easy to create. You can use the example schema file provided in the `examples` directory as a template. You can also refer to the tutorial on [Using Data Schemas] for more information on how to create a schema file.
+
 ### To run locally (without Docker)
 
 - Create your virtual environment and install dependencies listed in `requirements.txt`.
@@ -175,33 +179,40 @@ adaptable_binary_classifier/
   `docker build -t classifier_img .` <br/>
   Here `classifier_img` is the name given to the container (you can choose any name).
 
-- Run the container. Note the following:
+- Note the following before running the container for train, batch prediction or inference service:
 
-  - The inference service runs on the container's port **8080**. Use the `-p` flag to map a port on local host to the port 8080 in the container. You can use the following command: <br/>
-    `docker run -it -p 8080:8080 --name classifier classifier_img`
-  - The bind mount needs to be specified when running the container. It must be mounted to the path `/opt/my_model_inputs_outputs/` inside the container. You can use the `-v` flag to specify the bind mount. You can use the following command: <br/>
-    `docker run -it -p 8080:8080 -v <path_to_bind_mount_on_host>:/opt/my_model_inputs_outputs/ --name classifier classifier_img`
-  - Container runs as user 1000. Provide appropriate read-write permissions to user 1000 for the bind mount.
+  - The train, batch predictions tasks and inference service tasks require a bind mount to be mounted to the path `/opt/model_inputs_outputs/` inside the container. You can use the `-v` flag to specify the bind mount.
+
+  - When you run the train or batch prediction tasks, the container will exit by itself after the task is complete. When the inference service task is run, the container will keep running until you stop or kill it.
+
+  - When you run training task on the container, the container will save the trained model artifacts in the specified path in the bind mount. This persists the artifacts even after the container is stopped or killed.
+
+  - When you run the batch prediction or inference service tasks, the container will load the trained model artifacts from the same location in the bind mount. If the artifacts are not present, the container will exit with an error.
+
+  - The inference service runs on the container's port **8080**. Use the `-p` flag to map a port on local host to the port 8080 in the container.
+
+  - Container runs as user 1000. Provide appropriate read-write permissions to user 1000 for the bind mount. Please follow the principle of least privilege when setting permissions. The following permissions are required:
+
     - Read access to the `inputs` directory in the bind mount. Write or execute access is not required.
-    - User 1000 must have read-write access to the `outputs` directory and `model` directories. Execute access is not required.
-    - Please follow the principle of least privilege when setting permissions.
+
+    - Read-write access to the `outputs` directory and `model` directories. Execute access is not required.
 
 - You can run training with or without hyperparameter tuning:
 
-  - To run training without hyperparameter tuning (i.e. using default hyperparameters), issue the command on the running container: <br/>
-    `docker exec -it myc python train.py` <br/>
-    where `myc` is the name of the container. This will train the model and save the artifacts in the `model_inputs_outputs/model/artifacts` directory in the bind mount.
+  - To run training without hyperparameter tuning (i.e. using default hyperparameters), run the container with the following command container: <br/>
+    `docker run -v <path_to_mount_on_host>/model_inputs_outputs:/opt/model_inputs_outputs classifier_img python train.py` <br/>
+    where `classifier_img` is the name of the container. This will train the model and save the artifacts in the `model_inputs_outputs/model/artifacts` directory in the bind mount.
 
   - To run training with hyperparameter tuning, issue the command: <br/>
-    `docker exec -it myc python train.py -t`. <br/>
+    `docker run -v <path_to_mount_on_host>/model_inputs_outputs:/opt/model_inputs_outputs classifier_img python train.py -t` <br/>
     This will tune hyperparameters,and used the tuned hyperparameters to train the model and save the artifacts in the `model_inputs_outputs/model/artifacts` directory in the bind mount. It will also save the hyperparameter tuning results in the `model_inputs_outputs/outputs/hpt_outputs` directory in the bind mount.
 
 - To run batch predictions, place the prediction data file in the `model_inputs_outputs/inputs/data/testing` directory in the bind mount. Then issue the command: <br/>
-  `docker exec -it myc python predict.py` <br/>
-  where `myc` is the name of the container. This will load the artifacts and create and save the predictions in a file called `predictions.csv` in the path `model_inputs_outputs/outputs/predictions/` in the bind mount.
+  `docker run -v <path_to_mount_on_host>/model_inputs_outputs:/opt/model_inputs_outputs classifier_img python predict.py` <br/>
+  This will load the artifacts and create and save the predictions in a file called `predictions.csv` in the path `model_inputs_outputs/outputs/predictions/` in the bind mount.
 
 - To run the inference service, issue the following command on the running container: <br/>
-  `docker exec -it myc python serve.py` <br/>
+  `docker run -p 8080:8080 -v <path_to_mount_on_host>/model_inputs_outputs:/opt/model_inputs_outputs classifier_img python serve.py` <br/>
   This starts the service on port 8080. You can query the service using the `/ping`, `/infer` and `/explain` endpoints. More information on the requests/responses on the endpoints is provided below.
 
 ## Using the Inference Service
