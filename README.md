@@ -38,7 +38,7 @@ The tutorial series is divided into 3 modules as follows:
    - **Containerizing ML Models - The Model-as-a-Service pattern**: In this tutorial, we review how to containerize an ML model to make it easily portable and deployable in different environments. We will use the Model-as-a-Service pattern for deployment.
    - **Containerizing ML Models - The Hybrid Pattern**: In this tutorial, we cover how to containerize an ML model with Docker to include both training and inference services.
 
-This particular branch called [module-1-complete](https://github.com/readytensor/adaptable_binary_classifier/tree/module-1-complete) is the completion point of module 1 in the series. The module 1 start point is [here](https://github.com/readytensor/adaptable_binary_classifier/tree/module-1-start).
+This particular branch called [module-3-complete](https://github.com/readytensor/adaptable_binary_classifier/tree/module-1-complete) is the completion point of third (and final) module in the series. This is the final, completion version of the code for the binary classifier model.
 
 ## Project Structure
 
@@ -159,13 +159,163 @@ adaptable_binary_classifier/
 
 ## Usage
 
-To run the project:
+### To run locally (without Docker)
 
 - Create your virtual environment and install dependencies listed in `requirements.txt`.
 - Move the three example files (`titanic_schema.json`, `titanic_train.csv` and `titanic_test.csv`) in the `examples` directory into the `./model_inputs_outputs/inputs/schema`, `./model_inputs_outputs/inputs/data/training` and `./model_inputs_outputs/inputs/data/testing` folders, respectively.
 - Run the script `src/train.py` to train the random forest classifier model. This will save the model artifacts, including the preprocessing pipeline and label encoder, in the path `./model_inputs_outputs/model/artifacts/`.
 - Run the script `src/predict.py` to run batch predictions using the trained model. This script will load the artifacts and create and save the predictions in a file called `predictions.csv` in the path `./model_inputs_outputs/outputs/predictions/`.
 - Run the script `src/serve.py` to start the inference service, which can be queried using the `/ping`, `/infer` and `/explain` endpoints. The service runs on port 8080.
+
+### To run with Docker
+
+- Set up a bind mount on host machine: It needs to mirror the structure of the `model_inputs_outputs` directory. Place the train data file in the `model_inputs_outputs/inputs/data/training` directory, the test data file in the `model_inputs_outputs/inputs/data/testing` directory, and the schema file in the `model_inputs_outputs/inputs/schema` directory.
+
+- Build the image. You can use the following command: <br/>
+  `docker build -t classifier_img .` <br/>
+  Here `classifier_img` is the name given to the container (you can choose any name).
+
+- Run the container. Note the following:
+
+  - The inference service runs on the container's port **8080**. Use the `-p` flag to map a port on local host to the port 8080 in the container. You can use the following command: <br/>
+    `docker run -it -p 8080:8080 --name classifier classifier_img`
+  - The bind mount needs to be specified when running the container. It must be mounted to the path `/opt/my_model_inputs_outputs/` inside the container. You can use the `-v` flag to specify the bind mount. You can use the following command: <br/>
+    `docker run -it -p 8080:8080 -v <path_to_bind_mount_on_host>:/opt/my_model_inputs_outputs/ --name classifier classifier_img`
+  - Container runs as user 1000. Provide appropriate read-write permissions to user 1000 for the bind mount.
+    - Read access to the `inputs` directory in the bind mount. Write or execute access is not required.
+    - User 1000 must have read-write access to the `outputs` directory and `model` directories. Execute access is not required.
+    - Please follow the principle of least privilege when setting permissions.
+
+- You can run training with or without hyperparameter tuning:
+
+  - To run training without hyperparameter tuning (i.e. using default hyperparameters), issue the command on the running container: <br/>
+    `docker exec -it myc python train.py` <br/>
+    where `myc` is the name of the container. This will train the model and save the artifacts in the `model_inputs_outputs/model/artifacts` directory in the bind mount.
+
+  - To run training with hyperparameter tuning, issue the command: <br/>
+    `docker exec -it myc python train.py -t`. <br/>
+    This will tune hyperparameters,and used the tuned hyperparameters to train the model and save the artifacts in the `model_inputs_outputs/model/artifacts` directory in the bind mount. It will also save the hyperparameter tuning results in the `model_inputs_outputs/outputs/hpt_outputs` directory in the bind mount.
+
+- To run batch predictions, place the prediction data file in the `model_inputs_outputs/inputs/data/testing` directory in the bind mount. Then issue the command: <br/>
+  `docker exec -it myc python predict.py` <br/>
+  where `myc` is the name of the container. This will load the artifacts and create and save the predictions in a file called `predictions.csv` in the path `model_inputs_outputs/outputs/predictions/` in the bind mount.
+
+- To run the inference service, issue the following command on the running container: <br/>
+  `docker exec -it myc python serve.py` <br/>
+  This starts the service on port 8080. You can query the service using the `/ping`, `/infer` and `/explain` endpoints. More information on the requests/responses on the endpoints is provided below.
+
+## Using the Inference Service
+
+### Getting Predictions
+
+To get predictions for a single sample, use the following command:
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{
+  {
+    "instances": [
+        {
+            "PassengerId": "879",
+            "Pclass": 3,
+            "Name": "Laleff, Mr. Kristo",
+            "Sex": "male",
+            "Age": None,
+            "SibSp": 0,
+            "Parch": 0,
+            "Ticket": "349217",
+            "Fare": 7.8958,
+            "Cabin": None,
+            "Embarked": "S"
+        }
+    ]
+}' http://localhost:8080/infer
+```
+
+The key `instances` contains a list of objects, each of which is a sample for which the prediction is requested. The server will respond with a JSON object containing the predicted probabilities for each input record:
+
+```json
+{
+  "status": "success",
+  "message": "",
+  "timestamp": "<timestamp>",
+  "requestId": "<uniquely generated id>",
+  "targetClasses": ["0", "1"],
+  "targetDescription": "A binary variable indicating whether or not the passenger survived (0 = No, 1 = Yes).",
+  "predictions": [
+    {
+      "sampleId": "879",
+      "predictedClass": "0",
+      "predictedProbabilities": [0.97548, 0.02452]
+    }
+  ]
+}
+```
+
+### Getting predictions and local explanations
+
+To get predictions and explanations for a single sample, use the following request to send to `/explain` endpoint (same structure as data for the `/infer` endpoint):
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{
+  {
+    "instances": [
+        {
+            "PassengerId": "879",
+            "Pclass": 3,
+            "Name": "Laleff, Mr. Kristo",
+            "Sex": "male",
+            "Age": None,
+            "SibSp": 0,
+            "Parch": 0,
+            "Ticket": "349217",
+            "Fare": 7.8958,
+            "Cabin": None,
+            "Embarked": "S"
+        }
+    ]
+}' http://localhost:8080/explain
+```
+
+The server will respond with a JSON object containing the predicted probabilities and locations for each input record:
+
+```json
+{
+  "status": "success",
+  "message": "",
+  "timestamp": "2023-05-22T10:51:45.860800",
+  "requestId": "0ed3d0b76d",
+  "targetClasses": ["0", "1"],
+  "targetDescription": "A binary variable indicating whether or not the passenger survived (0 = No, 1 = Yes).",
+  "predictions": [
+    {
+      "sampleId": "879",
+      "predictedClass": "0",
+      "predictedProbabilities": [0.92107, 0.07893],
+      "explanation": {
+        "baseline": [0.57775, 0.42225],
+        "featureScores": {
+          "Age_na": [0.05389, -0.05389],
+          "Age": [0.02582, -0.02582],
+          "SibSp": [-0.00469, 0.00469],
+          "Parch": [0.00706, -0.00706],
+          "Fare": [0.05561, -0.05561],
+          "Embarked_S": [0.01582, -0.01582],
+          "Embarked_C": [0.00393, -0.00393],
+          "Embarked_Q": [0.00657, -0.00657],
+          "Pclass_3": [0.0179, -0.0179],
+          "Pclass_1": [0.02394, -0.02394],
+          "Sex_male": [0.13747, -0.13747]
+        }
+      }
+    }
+  ],
+  "explanationMethod": "Shap"
+}
+```
+
+## OpenAPI
+
+Since the service is implemented using FastAPI, we get automatic documentation of the APIs offered by the service. Visit the docs at `http://localhost:8080/docs`.
 
 ## Testing
 
