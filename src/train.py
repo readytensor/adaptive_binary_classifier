@@ -133,7 +133,7 @@ def run_training(
     print(f"Validation data accuracy: {val_accuracy}")
 
     # fit and save explainer
-    fit_and_save_explainer(
+    _ = fit_and_save_explainer(
         transformed_train_inputs, explainer_config_file_path, explainer_file_path
     )
 
