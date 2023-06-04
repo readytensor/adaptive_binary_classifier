@@ -136,7 +136,7 @@ class SchemaModel(BaseModel):
         return v
 
 
-def validate_schema_dict(schema_dict: dict) -> None:
+def validate_schema_dict(schema_dict: dict) -> dict:
     """
     Validate the schema
     Args:
@@ -145,6 +145,9 @@ def validate_schema_dict(schema_dict: dict) -> None:
 
     Raises:
         ValueError: if the schema is invalid
+
+    Returns:
+        dict: validated schema as a python dictionary
     """
     try:
         schema_dict = SchemaModel.parse_obj(schema_dict).dict()

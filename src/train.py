@@ -162,7 +162,7 @@ def run_training(
 
         # fit and save explainer
         logger.info("Fitting and saving explainer...")
-        fit_and_save_explainer(
+        _ = fit_and_save_explainer(
             transformed_train_inputs, explainer_config_file_path, explainer_file_path
         )
 
