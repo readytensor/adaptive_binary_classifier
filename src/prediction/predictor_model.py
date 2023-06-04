@@ -128,7 +128,7 @@ class Classifier:
 
 def train_predictor_model(
     train_inputs: pd.DataFrame, train_targets: pd.Series, hyperparameters: dict
-) -> Tuple:
+) -> Classifier:
     """
     Instantiate and train the predictor model.
 

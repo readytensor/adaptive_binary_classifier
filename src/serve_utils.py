@@ -2,7 +2,7 @@
 This script contains utility functions/classes that are used in serve.py
 """
 import uuid
-from typing import Any, Tuple
+from typing import Any, Dict, Tuple
 
 import pandas as pd
 from starlette.requests import Request
@@ -142,7 +142,7 @@ async def transform_req_data_and_make_predictions(
 
 def create_predictions_response(
     predictions_df: pd.DataFrame, data_schema: Any, request_id: str
-) -> None:
+) -> Dict[str, Any]:
     """
     Convert the predictions DataFrame to a response dictionary in required format.
 
