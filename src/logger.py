@@ -8,7 +8,6 @@ def get_logger(task_name: str) -> logging.Logger:
 
     Args:
         task_name (str): The name of the task to include in the log messages.
-        reset_file (bool): If True, clears the log file when initializing the logger.
 
     Returns:
         logging.Logger: A logger object with the specified handlers.
