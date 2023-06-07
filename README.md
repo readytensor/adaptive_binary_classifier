@@ -2,16 +2,29 @@
 
 ## Project Description
 
-This repository is a dockerized implementation of the random forest binary classifier. It is implemented in flexible way that it can be used with any binary classification dataset with with use of a data schema. The model includes:
+This repository is a dockerized implementation of the Random Forest binary classifier. It is implemented in flexible way that it can be used with any binary classification dataset with with use of JSON-formatted data schema file.
 
-- A flexible preprocessing pipeline built using **SciKit-Learn** and **feature-engine**
-- A Random Forest algorithm built using **SciKit-Learn**
-- Hyperparameter-tuning using **scikit-optimize**
-- SHAP explainer using the **shap** package
-- **FASTAPI** inference service which provides endpoints for predictions and local explanations.
-- **Pydantic** data validation is used for the schema, training and test files, as well as the inference request data.
-- Error handling and logging using **Python's logging** module.
-- Comprehensive set of unit, integration, coverage and performance tests using **pytest**, **pytest-cov**.
+The main purpose of this repository is to provide a complete example of a machine learning model implementation that is ready for deployment.
+
+Here are the highlights of this implementation:
+
+- Implementation contains a full-suite of functionality such as:
+  - A flexible preprocessing pipeline built using **SciKit-Learn** and **feature-engine**
+  - A Random Forest algorithm built using **SciKit-Learn**
+  - Hyperparameter-tuning using **scikit-optimize**
+  - SHAP explainer using the **shap** package
+  - **FASTAPI** inference service which provides endpoints for predictions and local explanations.
+  - **Pydantic** data validation is used for the schema, training and test files, as well as the inference request data.
+  - Error handling and logging using **Python's logging** module.
+  - Comprehensive set of unit, integration, coverage and performance tests using **pytest** and **pytest-cov**.
+  - Static code analysis using **flake8**, **black**, **isort**, **safety**, and **radon**.
+  - Test automation using **tox**.
+- It is flexible enough to be used with any binary classification dataset without requiring any code change albeit with the following restrictions:
+  - The data must be in CSV format
+  - The number of rows must not exceed 20,000. Number of columns must not exceed 200. The model may function with larger datasets, but it has not been performance tested on larger dataset.
+  - Features must be one of the following two types: NUMERIC or CATEGORICAL. Other data types are not supported. Note that CATEGORICAL type includes boolean type (except they must be expressed as 0/1 or strings)
+  - The train and test (or prediction) files must contain an ID field. The train data must also contain a target field.
+- The data need not be preprocessed because the implementation already contains logic to handle missing values, categorical features, outliers, and scaling.
 
 This repository is part of a tutorial series called [Creating Adaptive ML Models](https://docs.readytensor.ai/category/creating-adaptive-ml-models) on Ready Tensor, a web platform for AI developers and users. The purpose of the tutorial series is to help AI developers create adaptive algorithm implementations that avoid hard-coding your logic to a specific dataset. This makes it easier to re-use your algorithms with new datasets in the future without requiring any code change.
 
@@ -312,16 +325,18 @@ This will run the tests as well as formatters `black` and `isort` and linter `fl
 
 ## Requirements
 
-Dependencies are listed in the file `requirements.txt`. These packages can be installed by running the following command:
+The requirements files are placed in the folder `requirements`.
+
+Dependencies for the main model implementation in `src` are listed in the file `requirements.txt`.
+
+For testing, dependencies are listed in the file `requirements-test.txt`.
+
+Dependencies for quality-tests are listed in the file `requirements-quality.txt`. You can install these packages by running the following command:
 
 ```python
 pip install -r requirements.txt
-```
-
-For testing, dependencies are listed in the file `requirements-test.txt`. You can install these packages by running the following command:
-
-```python
 pip install -r requirements-test.txt
+pip install -r requirements-quality.txt
 ```
 
 Alternatively, you can let tox handle the installation of test dependencies for you. To do this, simply run the command `tox` from the root directory of the repository.
