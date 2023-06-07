@@ -327,19 +327,9 @@ This will run the tests as well as formatters `black` and `isort` and linter `fl
 
 The requirements files are placed in the folder `requirements`.
 
-Dependencies for the main model implementation in `src` are listed in the file `requirements.txt`.
+Dependencies for the main model implementation in `src` are listed in the file `requirements.txt`. You can install these packages by running `pip install -r requirements.txt`.
 
-For testing, dependencies are listed in the file `requirements-test.txt`.
-
-Dependencies for quality-tests are listed in the file `requirements-quality.txt`. You can install these packages by running the following command:
-
-```python
-pip install -r requirements.txt
-pip install -r requirements-test.txt
-pip install -r requirements-quality.txt
-```
-
-Alternatively, you can let tox handle the installation of test dependencies for you. To do this, simply run the command `tox` from the root directory of the repository.
+For testing, dependencies are listed in the file `requirements-test.txt`. Dependencies for quality-tests are listed in the file `requirements-quality.txt`. Testing and quality checks are run using the command `tox` which will also install the required dependencies.
 
 ## Contact Information
 
