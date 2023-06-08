@@ -9,9 +9,18 @@ from tests.performance_tests.performance_test_helpers import (
 )
 
 
-def test_build_time_performance(
-    docker_img_build_perf_results_path: str,
-):
+def test_build_time_performance(docker_img_build_perf_results_path: str) -> None:
+    """
+    Test and record the build time performance and size of a docker image.
+
+    This function builds a Docker image, measures the build time, gets the image size,
+    stores these values in a CSV file, and then removes the Docker image.
+
+    Args:
+        docker_img_build_perf_results_path (str): Path to the CSV file where the build
+        time performance metrics will be stored.
+
+    """
     script_dir = os.path.dirname(os.path.abspath(__file__))
     dockerfile_path = os.path.join(script_dir, "../../")
 
