@@ -60,4 +60,3 @@ def test_build_time_performance(docker_img_build_perf_results_path: str) -> None
 
     # Remove the Docker image
     client.images.remove(img_name)
-
