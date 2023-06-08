@@ -201,6 +201,11 @@ def test_train_predict_performance(
 ):
     """Test the training and prediction workflows while recording performance.
 
+    This function runs the training and prediction workflows with various dataset sizes
+    and records the memory usage and execution time. The function also asserts that the
+    model artifacts and predictions are saved in the correct paths and that the number
+    of rows in the predictions matches the number of rows in the test data.
+
     Args:
         tmpdir: Temporary directory.
         model_config_file_path (str): Path to model configuration file.
@@ -210,11 +215,6 @@ def test_train_predict_performance(
         explainer_config_file_path (str): Path to explainer configuration file.
         train_predict_perf_results_path (str): Path to the file where training and
         prediction performance results will be stored.
-
-    This function runs the training and prediction workflows with various dataset sizes
-    and records the memory usage and execution time. The function also asserts that the
-    model artifacts and predictions are saved in the correct paths and that the number
-    of rows in the predictions matches the number of rows in the test data.
     """
 
     # If the results file already exists, delete it
