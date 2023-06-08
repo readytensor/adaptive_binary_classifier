@@ -4,7 +4,9 @@ import os
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Path to the mounted volume
-MODEL_INPUTS_OUTPUTS = os.environ.get('BIND_MOUNT_PATH', '/opt/model_inputs_outputs/')
+MODEL_INPUTS_OUTPUTS = os.environ.get(
+    "BIND_MOUNT_PATH", os.path.join(ROOT_DIR, "model_inputs_outputs/")
+)
 
 # Path to inputs
 INPUT_DIR = os.path.join(MODEL_INPUTS_OUTPUTS, "inputs")
