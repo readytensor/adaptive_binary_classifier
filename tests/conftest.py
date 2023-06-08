@@ -299,10 +299,16 @@ def explainer_file_path(tmpdir):
 
 
 @pytest.fixture
-def resources_paths():
-    """Define a fixture for the paths to the test model resources."""
+def test_resources_path():
+    """Define a fixture for the path to the test_resources directory."""
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     test_resources_path = os.path.join(cur_dir, "test_resources")
+    return test_resources_path
+
+
+@pytest.fixture
+def resources_paths_dict(test_resources_path):
+    """Define a fixture for the paths to the test model resources."""
     return {
         "saved_schema_path": os.path.join(test_resources_path, "schema.joblib"),
         "predictor_file_path": os.path.join(test_resources_path, "predictor.joblib"),
@@ -318,6 +324,6 @@ def resources_paths():
 
 
 @pytest.fixture
-def model_resources(resources_paths):
+def model_resources(resources_paths_dict):
     """Define a fixture for the test ModelResources object."""
-    return get_model_resources(**resources_paths)
+    return get_model_resources(**resources_paths_dict)
