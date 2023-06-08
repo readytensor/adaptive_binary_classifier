@@ -6,13 +6,6 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.serve import create_app
-from src.serve_utils import get_model_resources
-
-
-@pytest.fixture
-def model_resources(resources_paths):
-    """Define a fixture for the test ModelResources object."""
-    return get_model_resources(**resources_paths)
 
 
 @pytest.fixture
