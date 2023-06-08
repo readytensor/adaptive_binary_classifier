@@ -24,3 +24,11 @@ def inference_apis_perf_results_path(performance_test_results_dir_path):
         performance_test_results_dir_path, "inference_api_performance_results.csv"
     )
     return str(file_path)
+
+
+@pytest.fixture
+def docker_img_build_perf_results_path(performance_test_results_dir_path):
+    file_path = os.path.join(
+        performance_test_results_dir_path, "docker_img_build_performance_results.csv"
+    )
+    return str(file_path)
