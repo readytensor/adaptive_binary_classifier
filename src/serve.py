@@ -4,6 +4,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+import pandas as pd
 
 from config import paths
 from data_models.infer_request_model import get_inference_request_body_model
@@ -79,8 +80,9 @@ def create_app(model_resources):
             request_id = generate_unique_request_id()
             logger.info(f"Responding to inference request. Request id: {request_id}")
             logger.info("Starting predictions...")
+            data = pd.DataFrame.from_records(request.dict()["instances"])
             _, predictions_response = await transform_req_data_and_make_predictions(
-                request, model_resources, request_id
+                data, model_resources, request_id
             )
             logger.info("Returning predictions...")
             return predictions_response
@@ -117,11 +119,12 @@ def create_app(model_resources):
             request_id = generate_unique_request_id()
             logger.info(f"Responding to explanation request. Request id: {request_id}")
             logger.info("Starting prediction...")
+            data = pd.DataFrame.from_records(request.dict()["instances"])
             (
                 transformed_data,
                 predictions_response,
             ) = await transform_req_data_and_make_predictions(
-                request, model_resources, request_id
+                data, model_resources, request_id
             )
             logger.info("Generating explanations...")
             explanations = get_explanations_from_explainer(
