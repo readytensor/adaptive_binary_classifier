@@ -61,6 +61,7 @@ def get_model_resources(
         Loaded ModelResources object
     """
     try:
+        print("Loading")
         model_resources = ModelResources(
             saved_schema_path,
             model_config_file_path,
@@ -84,13 +85,13 @@ def generate_unique_request_id():
     return uuid.uuid4().hex[:10]
 
 
-async def transform_req_data_and_make_predictions(
-    request: Request, model_resources: ModelResources, request_id: str
+def transform_req_data_and_make_predictions(
+    data: pd.DataFrame, model_resources: ModelResources, request_id: str
 ) -> Tuple[pd.DataFrame, dict]:
     """Transform request data and generate predictions based on request.
 
     Function performs the following steps:
-    1. Convert request data into pandas dataframe
+    1. Validate the request data
     2. Transforms the dataframe using preprocessing pipeline
     3. Makes predictions as np array on the transformed data using the predictor model
     4. Converts predictions np array into pandas dataframe with required structure
@@ -105,7 +106,6 @@ async def transform_req_data_and_make_predictions(
         Tuple[pd.DataFrame, dict]: Tuple containing transformed data and
             prediction response.
     """
-    data = pd.DataFrame.from_records(request.dict()["instances"])
     logger.info(f"Predictions requested for {len(data)} samples...")
 
     # validate the data
