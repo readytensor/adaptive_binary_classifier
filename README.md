@@ -121,9 +121,11 @@ adaptive_binary_classifier/
   - **`prediction/`**: for prediction model (random forest) script
   - **`preprocessing/`**: for data preprocessing scripts including the preprocessing pipeline, target encoder, and custom transformers.
   - **`schema/`**: for schema handler script.
+  - **`ui/`**: Contains Streamlit app script.
   - **`xai/`**: explainable AI scripts (SHAP explainer)
     Furthermore, we have the following scripts in `src`:
-  - **`logger.py`**: This is a temporary script created to check the preprocessing pipeline. It will be removed in module 2 of this series.
+  - **`app.py`**: This script contains the app to launch Streamlit UI.
+  - **`logger.py`**: This script contains the logger configuration.
   - **`predict.py`**: This script is used to run batch predictions using the trained model. It loads the artifacts and creates and saves the predictions in a file called `predictions.csv` in the path `./model_inputs_outputs/outputs/predictions/`.
   - **`serve.py`**: This script is used to serve the model as a REST API. It loads the artifacts and creates a FastAPI server to serve the model. It provides 3 endpoints: `/ping`, `/infer`, and `/explain`. The `/ping` endpoint is used to check if the server is running. The `/infer` endpoint is used to make predictions. The `/explain` endpoint is used to get local explanations for the predictions.
   - **`serve_utils.py`**: This script contains utility functions used by the `serve.py` script.
@@ -157,7 +159,10 @@ adaptive_binary_classifier/
 - Move the three example files (`titanic_schema.json`, `titanic_train.csv` and `titanic_test.csv`) in the `examples` directory into the `./model_inputs_outputs/inputs/schema`, `./model_inputs_outputs/inputs/data/training` and `./model_inputs_outputs/inputs/data/testing` folders, respectively (or alternatively, place your custom dataset files in the same locations).
 - Run the script `src/train.py` to train the random forest classifier model. This will save the model artifacts, including the preprocessing pipeline and label encoder, in the path `./model_inputs_outputs/model/artifacts/`. If you want to run with hyperparameter tuning then include the `-t` flag. This will also save the hyperparameter tuning results in the path `./model_inputs_outputs/outputs/hpt_outputs/`.
 - Run the script `src/predict.py` to run batch predictions using the trained model. This script will load the artifacts and create and save the predictions in a file called `predictions.csv` in the path `./model_inputs_outputs/outputs/predictions/`.
-- Run the script `src/serve.py` to start the inference service, which can be queried using the `/ping`, `/infer` and `/explain` endpoints. The service runs on port 8080.
+- To run inference service:
+  - Run the script `src/serve.py` to start the inference service, which can be queried using the `/ping`, `/infer` and `/explain` endpoints. The service runs on port 8080.
+- Alternatively, to run the Streamlit app:
+  - Run Streamlit as follows `streamlit run src/app.py`. This will start the app on port 8501. You can access the app at `http://localhost:8501`.
 
 ### To run with Docker
 
