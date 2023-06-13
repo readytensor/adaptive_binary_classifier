@@ -73,16 +73,15 @@ def generate_unique_request_id():
 
 
 async def transform_req_data_and_make_predictions(
-    request: Request, model_resources: ModelResources, request_id: str
+    data: pd.DataFrame, model_resources: ModelResources, request_id: str
 ) -> Tuple[pd.DataFrame, dict]:
     """Transform request data and generate predictions based on request.
 
     Function performs the following steps:
-    1. Convert request data into pandas dataframe
-    2. Transforms the dataframe using preprocessing pipeline
-    3. Makes predictions as np array on the transformed data using the predictor model
-    4. Converts predictions np array into pandas dataframe with required structure
-    5. Converts the predictions dataframe into a dictionary with required structure
+    1. Transforms the dataframe using preprocessing pipeline
+    2. Makes predictions as np array on the transformed data using the predictor model
+    3. Converts predictions np array into pandas dataframe with required structure
+    4. Converts the predictions dataframe into a dictionary with required structure
 
     Args:
         request (InferenceRequestBodyModel): The request body containing the input data.
@@ -93,7 +92,6 @@ async def transform_req_data_and_make_predictions(
         Tuple[pd.DataFrame, dict]: Tuple containing transformed data and
             prediction response.
     """
-    data = pd.DataFrame.from_records(request.dict()["instances"])
     transformed_data, _ = transform_data(
         model_resources.preprocessor, model_resources.target_encoder, data
     )

@@ -4,6 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+import pandas as pd
 
 from serve_utils import (
     ModelResources,
@@ -47,16 +48,14 @@ def create_app(model_resources):
             request (InferenceRequestBodyModel): The request body containing the
                 input data.
 
-        Raises:
-            HTTPException: If there is an error during inference.
-
         Returns:
             dict: dict: A dictionary with "status", "message", "timestamp", "requestId",
                 "targetClasses", "targetDescription", and "predictions" keys.
         """
         request_id = generate_unique_request_id()
+        data = pd.DataFrame.from_records(request.dict()["instances"])
         _, predictions_response = await transform_req_data_and_make_predictions(
-            request, model_resources, request_id
+            data, model_resources, request_id
         )
         return predictions_response
 
