@@ -77,11 +77,12 @@ def create_app(model_resources):
                 and "explanationMethod" keys.
         """
         request_id = generate_unique_request_id()
+        data = pd.DataFrame.from_records(request.dict()["instances"])
         (
             transformed_data,
             predictions_response,
         ) = await transform_req_data_and_make_predictions(
-            request, model_resources, request_id
+            data, model_resources, request_id
         )
         explanations = get_explanations_from_explainer(
             instances_df=transformed_data,
