@@ -22,7 +22,7 @@ class Target(BaseModel):
     description: str
     classes: List[str]
 
-    @validator("classes")
+    @validator("classes", allow_reuse=True)
     def target_classes_are_two_and_unique_and_not_empty_str(cls, target_classes):
         if len(target_classes) != 2:
             raise ValueError(
@@ -62,7 +62,7 @@ class Feature(BaseModel):
     example: Optional[Union[float, str]]
     categories: Optional[List[str]]
 
-    @validator("example", always=True)
+    @validator("example", always=True, allow_reuse=True)
     def example_is_present_with_data_type_is_numeric(cls, v, values):
         data_type = values.get("dataType")
         if data_type == "NUMERIC" and v is None:
@@ -72,7 +72,7 @@ class Feature(BaseModel):
             )
         return v
 
-    @validator("categories", always=True)
+    @validator("categories", always=True, allow_reuse=True)
     def categories_are_present_with_data_type_is_categorical(cls, v, values):
         data_type = values.get("dataType")
         if data_type == "CATEGORICAL" and v is None:
@@ -82,7 +82,7 @@ class Feature(BaseModel):
             )
         return v
 
-    @validator("categories", always=True)
+    @validator("categories", always=True, allow_reuse=True)
     def categories_are_non_empty_strings(cls, v, values):
         categories = values.get("categories")
         if categories is not None:
@@ -113,7 +113,7 @@ class SchemaModel(BaseModel):
     target: Target
     features: List[Feature]
 
-    @validator("modelCategory")
+    @validator("modelCategory", allow_reuse=True)
     def valid_problem_category(cls, v):
         if v != "binary_classification":
             raise ValueError(
@@ -121,13 +121,13 @@ class SchemaModel(BaseModel):
             )
         return v
 
-    @validator("schemaVersion")
+    @validator("schemaVersion", allow_reuse=True)
     def valid_version(cls, v):
         if v != 1.0:
             raise ValueError(f"schemaVersion must be set to 1.0. Given {v}")
         return v
 
-    @validator("features")
+    @validator("features", allow_reuse=True)
     def at_least_one_predictor_field(cls, v):
         if len(v) < 1:
             raise ValueError(
