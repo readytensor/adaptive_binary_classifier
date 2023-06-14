@@ -22,9 +22,9 @@ class Classifier:
 
     def __init__(
         self,
-        n_estimators: Optional[int] = 200,
-        min_samples_split: Optional[int] = 8,
-        min_samples_leaf: Optional[int] = 4,
+        n_estimators: Optional[int] = 100,
+        min_samples_split: Optional[int] = 2,
+        min_samples_leaf: Optional[int] = 1,
         **kwargs,
     ):
         """Construct a new Random Forest binary classifier.
