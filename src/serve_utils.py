@@ -5,7 +5,6 @@ import uuid
 from typing import Any, Dict, Tuple
 
 import pandas as pd
-from starlette.requests import Request
 
 from config import paths
 from data_models.data_validator import validate_data
@@ -61,7 +60,6 @@ def get_model_resources(
         Loaded ModelResources object
     """
     try:
-        print("Loading")
         model_resources = ModelResources(
             saved_schema_path,
             model_config_file_path,
@@ -85,7 +83,7 @@ def generate_unique_request_id():
     return uuid.uuid4().hex[:10]
 
 
-def transform_req_data_and_make_predictions(
+async def transform_req_data_and_make_predictions(
     data: pd.DataFrame, model_resources: ModelResources, request_id: str
 ) -> Tuple[pd.DataFrame, dict]:
     """Transform request data and generate predictions based on request.

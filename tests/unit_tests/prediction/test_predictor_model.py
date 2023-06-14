@@ -62,9 +62,9 @@ def test_build_model_without_hyperparameters():
 
     # Check if the model has default hyperparameters
     default_hyperparameters = {
-        "n_estimators": 200,
-        "min_samples_split": 8,
-        "min_samples_leaf": 4,
+        "n_estimators": 100,
+        "min_samples_split": 2,
+        "min_samples_leaf": 1,
     }
 
     for param, value in default_hyperparameters.items():

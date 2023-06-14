@@ -32,9 +32,9 @@ This repository is part of a tutorial series called [Creating Adaptive ML Models
 
 The tutorial series is divided into 3 modules as follows:
 
-1. **Model development**: This module will cover the following tutorials:
+1. **Model development**: This module covers the following tutorials:
 
-   - **Creating Standardized Project Structure**: This tutorial will review the standardized project structure we will use in this series.
+   - **Creating Standardized Project Structure**: This tutorial reviews the standardized project structure we will use in this series.
    - **Using Data Schemas**: This tutorial discusses how data schemas can be used to avoid hard-coding implementations to specific datasets.
    - **Creating Adaptive Data Preprocessing-Pipelines**: In this tutorial, we cover how to create data preprocessing pipelines that can work with diverse set of algorithms such as tree-based models and neural networks.
    - **Building a Binary Classifier in Python**: This tutorial reviews a binary classifier model implementation which enables providing a common interface for various types of algorithms.
@@ -42,14 +42,14 @@ The tutorial series is divided into 3 modules as follows:
    - **Integrating FastAPI for Online Inference**: This tutorial covers how we can set up an inference service using FastAPI to provide online predictions from our machine learning model.
    - **Model Interpretability with Shapley Values**: This tutorial describes implementing an eXplainable AI (XAI) technique called Shap to provide interpretability to ML models.
 
-2. **Quality Assurance for ML models**: This module will cover the following tutorials:
+2. **Quality Assurance for ML models**: This module covers the following tutorials:
 
    - **Error Handling and Logging**: In this tutorial, we review how to add basic error handling and logging to ML model implementations.
    - **Data Validation Using Pydantic**: This tutorial covers how we can use the pydantic library to validate input data for our machine learning model implementation.
    - **Testing ML Model Implementations**: This 6-part comprehensive tutorial covers the topic of testing machine learning model implementations including unit, integration, coverage and performance testing.
    - **Static Code Analysis for ML Models**: This is a two-part tutorial introducing static code analysis, discussing its importance in machine learning projects, and demonstrating how to implement it using various Python tools while automating the process with Tox.
 
-3. **Model Containerization for Deployment**: This module will cover the following tutorials:
+3. **Model Containerization for Deployment**: This module covers the following tutorials:
 
    - **Overview of ML Model Containerization**: In this tutorial, we review why containerization is a key part of deployment of ML models and explore its benefits. We also review common containerization patterns considering whether the container includes training, batch prediction, or inference services.
    - **Containerizing ML Models - The Hybrid Pattern**: In this tutorial, we cover how to containerize an ML model with Docker to include both training and inference services.

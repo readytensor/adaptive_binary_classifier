@@ -9,8 +9,10 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
 COPY ./requirements/requirements.txt /opt/
 RUN pip3 install -r /opt/requirements.txt 
 
+COPY ./entry_point.sh /opt/
+RUN chmod +x /opt/entry_point.sh
 
-COPY src /opt/src
+COPY src ./opt/src
 
 WORKDIR /opt/src
 
@@ -18,8 +20,6 @@ ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/src:${PATH}"
 
-RUN chmod +x train.py \
- && chmod +x predict.py \
- && chmod +x serve.py 
-
 USER 1000
+
+ENTRYPOINT ["/opt/entry_point.sh"]
