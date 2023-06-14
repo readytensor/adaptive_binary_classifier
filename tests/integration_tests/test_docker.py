@@ -179,7 +179,7 @@ def test_training_task(
     try:
         _ = client.containers.run(
             docker_image,
-            "python train.py",
+            "train",
             name=container_name,
             volumes=volumes,
             remove=True,
@@ -217,7 +217,7 @@ def test_prediction_task(
     try:
         _ = client.containers.run(
             docker_image,
-            "python predict.py",
+            "predict",
             name=container_name,
             volumes=volumes,
             remove=True,
@@ -266,7 +266,7 @@ def test_inference_service(
 
     container = client.containers.create(
         docker_image,
-        command="python serve.py",
+        command="serve",
         name=container_name,
         volumes=volumes,
         ports={"8080/tcp": 8080},
