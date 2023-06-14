@@ -99,6 +99,7 @@ adaptive_binary_classifier/
 ├── .gitignore
 ├── docker-compose.yaml
 ├── Dockerfile
+├── entrypoint.sh
 ├── LICENSE
 ├── pytest.ini
 ├── README.md
@@ -140,6 +141,7 @@ adaptive_binary_classifier/
 - **`.gitignore`**: This file specifies the files and folders that should be ignored by Git.
 - **`docker-compose.yaml`**: This file is used to define the services that make up the application. It is used by Docker Compose to run the application.
 - **`Dockerfile`**: This file is used to build the Docker image for the application.
+- **`entry_point.sh`**: This file is used as the entry point for the Docker container. It is used to run the application. When the container is run using one of the commands `train`, `predict` or `serve`, this script runs the corresponding script in the `src` folder to execute the task.
 - **`LICENSE`**: This file contains the license for the project.
 - **`pytest.ini`**: This is the configuration file for pytest, the testing framework used in this project.
 - **`README.md`**: This file contains the documentation for the project, explaining how to set it up and use it.
@@ -179,18 +181,18 @@ adaptive_binary_classifier/
 4. You can run training with or without hyperparameter tuning:
 
    - To run training without hyperparameter tuning (i.e. using default hyperparameters), run the container with the following command container: <br/>
-     `docker run -v <path_to_mount_on_host>/model_inputs_outputs:/opt/model_inputs_outputs classifier_img python train.py` <br/>
+     `docker run -v <path_to_mount_on_host>/model_inputs_outputs:/opt/model_inputs_outputs classifier_img train` <br/>
      where `classifier_img` is the name of the container. This will train the model and save the artifacts in the `model_inputs_outputs/model/artifacts` directory in the bind mount.
    - To run training with hyperparameter tuning, issue the command: <br/>
-     `docker run -v <path_to_mount_on_host>/model_inputs_outputs:/opt/model_inputs_outputs classifier_img python train.py -t` <br/>
+     `docker run -v <path_to_mount_on_host>/model_inputs_outputs:/opt/model_inputs_outputs classifier_img train -t` <br/>
      This will tune hyperparameters,and used the tuned hyperparameters to train the model and save the artifacts in the `model_inputs_outputs/model/artifacts` directory in the bind mount. It will also save the hyperparameter tuning results in the `model_inputs_outputs/outputs/hpt_outputs` directory in the bind mount.
 
 5. To run batch predictions, place the prediction data file in the `model_inputs_outputs/inputs/data/testing` directory in the bind mount. Then issue the command: <br/>
-   `docker run -v <path_to_mount_on_host>/model_inputs_outputs:/opt/model_inputs_outputs classifier_img python predict.py` <br/>
+   `docker run -v <path_to_mount_on_host>/model_inputs_outputs:/opt/model_inputs_outputs classifier_img predict` <br/>
    This will load the artifacts and create and save the predictions in a file called `predictions.csv` in the path `model_inputs_outputs/outputs/predictions/` in the bind mount.
 
 6. To run the inference service, issue the following command on the running container: <br/>
-   `docker run -p 8080:8080 -v <path_to_mount_on_host>/model_inputs_outputs:/opt/model_inputs_outputs classifier_img python serve.py` <br/>
+   `docker run -p 8080:8080 -v <path_to_mount_on_host>/model_inputs_outputs:/opt/model_inputs_outputs classifier_img serve` <br/>
    This starts the service on port 8080. You can query the service using the `/ping`, `/infer` and `/explain` endpoints. More information on the requests/responses on the endpoints is provided below.
 
 ## Using the Inference Service
