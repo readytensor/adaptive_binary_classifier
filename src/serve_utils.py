@@ -5,12 +5,11 @@ import uuid
 from typing import Any, Dict, Tuple
 
 import pandas as pd
-from starlette.requests import Request
 
 from config import paths
 from data_models.data_validator import validate_data
 from logger import get_logger, log_error
-from predict_utils import create_predictions_dataframe
+from predict import create_predictions_dataframe
 from prediction.predictor_model import load_predictor_model, predict_with_model
 from preprocessing.preprocess import load_pipeline_and_target_encoder, transform_data
 from schema.data_schema import load_saved_schema
