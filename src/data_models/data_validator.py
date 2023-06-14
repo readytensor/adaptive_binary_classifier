@@ -40,6 +40,11 @@ def get_data_validator(schema: BinaryClassificationSchema, is_train: bool) -> Ba
                     f"ID field '{schema.id}' is not present in the given data"
                 )
 
+            if data[schema.id].duplicated().any():
+                raise ValueError(
+                    f"ID field '{schema.id}' does not contain unique values"
+                )
+
             if is_train and schema.target not in data.columns:
                 raise ValueError(
                     f"Target field '{schema.target}' is not present in the given data"
