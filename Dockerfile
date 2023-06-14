@@ -17,8 +17,8 @@ ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/src:${PATH}"
 
-RUN chmod +x train.py \
- && chmod +x predict.py \
- && chmod +x serve.py 
+RUN chmod +x train \
+ && chmod +x predict \
+ && chmod +x serve 
 
 USER 1000
