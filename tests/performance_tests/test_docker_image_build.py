@@ -9,6 +9,7 @@ from tests.performance_tests.performance_test_helpers import (
 )
 
 
+@pytest.mark.slow
 def test_build_time_performance(docker_img_build_perf_results_path: str) -> None:
     """
     Test and record the build time performance and size of a docker image.
