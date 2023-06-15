@@ -5,7 +5,6 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-import pandas as pd
 
 from config import paths
 from data_models.infer_request_model import get_inference_request_body_model
