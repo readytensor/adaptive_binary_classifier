@@ -2,6 +2,7 @@ import os
 import time
 
 import docker
+import pytest
 
 from tests.performance_tests.performance_test_helpers import (
     delete_file_if_exists,
