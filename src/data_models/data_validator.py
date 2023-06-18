@@ -11,9 +11,11 @@ def get_data_validator(schema: BinaryClassificationSchema, is_train: bool) -> Ba
     The resulting validator checks the following:
 
     1. That the input DataFrame contains the ID field specified in the schema.
-    2. If `is_train` is `True`, that the input DataFrame contains the target field
+    2. That the data under ID field is unique.
+    3. If `is_train` is `True`, that the input DataFrame contains the target field
         specified in the schema.
-    3. That the input DataFrame contains all feature fields specified in the schema.
+    4. That the input DataFrame contains all feature fields specified in the schema.
+    5. For non-nullable features, that they do not contain null values.
 
     If any of these checks fail, the validator will raise a ValueError.
 
@@ -54,6 +56,17 @@ def get_data_validator(schema: BinaryClassificationSchema, is_train: bool) -> Ba
                 if feature not in data.columns:
                     raise ValueError(
                         f"Feature '{feature}' is not present in the given data"
+                    )
+
+            for feature in schema.non_nullable_features:
+                if feature not in data.columns:
+                    raise ValueError(
+                        f"Feature '{feature}' is not present in the given data"
+                    )
+
+                if data[feature].isnull().any():
+                    raise ValueError(
+                        f"Non-nullable feature '{feature}' contains null values"
                     )
 
             return data
