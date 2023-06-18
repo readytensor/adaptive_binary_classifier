@@ -28,6 +28,10 @@ class BinaryClassificationSchema:
         """
         self.schema = schema_dict
         self._numeric_features, self._categorical_features = self._get_features()
+        (
+            self.nullable_features,
+            self.non_nullable_features,
+        ) = self._get_nullable_and_non_nullable_features()
 
     @property
     def model_category(self) -> str:
@@ -52,14 +56,14 @@ class BinaryClassificationSchema:
         return self.schema["title"]
 
     @property
-    def description(self) -> str:
+    def summary(self) -> str:
         """
-        Gets the description of the dataset or problem.
+        Gets the summary of the dataset or problem.
 
         Returns:
-            str: A brief description of the dataset or the problem.
+            str: A brief summary of the dataset or the problem.
         """
-        return self.schema["description"]
+        return self.schema["summary"]
 
     @property
     def schema_version(self) -> float:
@@ -209,10 +213,9 @@ class BinaryClassificationSchema:
             List[str]: The list of allowed values for the specified
                 categorical feature.
         """
-        features = self.schema["features"]
-        for feature in features:
-            if feature["dataType"] == "CATEGORICAL" and feature["name"] == feature_name:
-                return feature["categories"]
+        field = self._get_field_by_name(feature_name)
+        if field["dataType"] == "CATEGORICAL":
+            return field["categories"]
         raise ValueError(
             f"Categorical feature '{feature_name}' not found in the schema."
         )
@@ -227,11 +230,8 @@ class BinaryClassificationSchema:
         Returns:
             str: The description for the specified feature.
         """
-        fields = self.schema["features"]
-        for field in fields:
-            if field["name"] == feature_name:
-                return field.get("description", "No description for feature available.")
-        raise ValueError(f"Feature '{feature_name}' not found in the schema.")
+        field = self._get_field_by_name(feature_name)
+        return field.get("description", "No description for feature available.")
 
     def get_example_value_for_feature(self, feature_name: str) -> List[str]:
         """
@@ -243,20 +243,15 @@ class BinaryClassificationSchema:
         Returns:
             List[str]: The example values for the specified feature.
         """
-
-        fields = self.schema["features"]
-        for field in fields:
-            if field["name"] == feature_name:
-                if field["dataType"] == "NUMERIC":
-                    return field.get("example", 0.0)
-                elif field["dataType"] == "CATEGORICAL":
-                    return field["categories"][0]
-                else:
-                    raise ValueError(
-                        "Invalid data type for Feature"
-                        f"'{feature_name}' found in the schema."
-                    )
-        raise ValueError(f"Feature '{feature_name}' not found in the schema.")
+        field = self._get_field_by_name(feature_name)
+        if field["dataType"] == "NUMERIC":
+            return field.get("example", 0.0)
+        elif field["dataType"] == "CATEGORICAL":
+            return field["categories"][0]
+        else:
+            raise ValueError(
+                f"Invalid data type for Feature '{feature_name}' found in the schema."
+            )
 
     def is_feature_nullable(self, feature_name: str) -> bool:
         """
@@ -268,10 +263,46 @@ class BinaryClassificationSchema:
         Returns:
             bool: True if the feature is nullable, False otherwise.
         """
+        field = self._get_field_by_name(feature_name)
+        return field.get("nullable", False)
+
+    def _get_nullable_and_non_nullable_features(self) -> Tuple[List[str], List[str]]:
+        """
+        Gets the names of the nullable and non-nullable features.
+
+        Returns:
+            tuple[List[str], List[str]]: A tuple containing the list of nullable
+                                         feature names and the list of non-nullable
+                                         feature names.
+        """
+        fields = self.schema["features"]
+        nullable_features = []
+        non_nullable_features = []
+        for field in fields:
+            feature_name = field["name"]
+            if self.is_feature_nullable(feature_name):
+                nullable_features.append(feature_name)
+            else:
+                non_nullable_features.append(feature_name)
+        return nullable_features, non_nullable_features
+
+    def _get_field_by_name(self, feature_name: str) -> dict:
+        """
+        Gets the field dictionary for a given feature name.
+
+        Args:
+            feature_name (str): The name of the feature.
+
+        Returns:
+            dict: The field dictionary for the feature.
+
+        Raises:
+            ValueError: If the feature is not found in the schema.
+        """
         fields = self.schema["features"]
         for field in fields:
             if field["name"] == feature_name:
-                return field.get("nullable", False)
+                return field
         raise ValueError(f"Feature '{feature_name}' not found in the schema.")
 
     @property
