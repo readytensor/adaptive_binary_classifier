@@ -1,11 +1,12 @@
 import os
 
-# Path to the root directory
+# Path to the root directory which contains the src directory
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Path to the mounted volume
+# Path into the mounted volume: set to environment variable MODEL_INPUTS_OUTPUTS_PATH if passed in
+# else set to default path which would be <path_to_root>/model_inputs_outputs/
 MODEL_INPUTS_OUTPUTS = os.environ.get(
-    "BIND_MOUNT_PATH", os.path.join(ROOT_DIR, "model_inputs_outputs/")
+    "MODEL_INPUTS_OUTPUTS_PATH", os.path.join(ROOT_DIR, "model_inputs_outputs/")
 )
 
 # Path to inputs
@@ -54,7 +55,7 @@ SERVE_ERROR_FILE_PATH = os.path.join(ERRORS_DIR, "serve_error.txt")
 
 # Paths inside the source directory
 # Path to source directory
-SRC_DIR = os.path.join(ROOT_DIR, "src")
+SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Path to config directory
 CONFIG_DIR = os.path.join(SRC_DIR, "config")
 # Path to model config
