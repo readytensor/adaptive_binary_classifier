@@ -52,7 +52,7 @@ SERVE_ERROR_FILE_PATH = os.path.join(ERRORS_DIR, "serve_error.txt")
 
 # Paths inside the source directory
 # Path to source directory
-SRC_DIR = os.path.join(ROOT_DIR, "src")
+SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Path to config directory
 CONFIG_DIR = os.path.join(SRC_DIR, "config")
 # Path to model config
