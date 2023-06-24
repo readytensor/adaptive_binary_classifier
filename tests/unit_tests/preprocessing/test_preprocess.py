@@ -159,6 +159,14 @@ def test_handle_class_imbalance(
 
 
 def test_insert_nulls_in_nullable_features(schema_provider, preprocessing_config):
+    """
+    Tests the function `insert_nulls_in_nullable_features` to ensure that it correctly
+    inserts nulls into nullable columns that don't already contain any nulls. This
+    function will generate a DataFrame with no null values and will verify that after
+    the function call, the nullable columns in the DataFrame contain at least one null
+    value.
+    """
+    
     # Set a seed to ensure reproducibility of random operations
     np.random.seed(0)
 
@@ -204,6 +212,13 @@ def test_insert_nulls_in_nullable_features(schema_provider, preprocessing_config
 
 def test_insert_nulls_in_nullable_features_no_insert(
         schema_provider, preprocessing_config):
+    """
+    Tests the function `insert_nulls_in_nullable_features` to ensure that it correctly
+    handles nullable columns that already contain nulls. This function will generate a
+    DataFrame with null values in some nullable features, then it verifies that after
+    the function call, no new nulls were inserted into these columns.
+    """
+    
     # Set a seed to ensure reproducibility of random operations
     np.random.seed(0)
 
