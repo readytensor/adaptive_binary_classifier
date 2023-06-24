@@ -3,8 +3,9 @@ import os
 # Path to the root directory which contains the src directory
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Path into the mounted volume: set to environment variable MODEL_INPUTS_OUTPUTS_PATH if passed in
-# else set to default path which would be <path_to_root>/model_inputs_outputs/
+# Path into the mounted volume:
+#   set to environment variable MODEL_INPUTS_OUTPUTS_PATH if it exists
+#   else: set to default path which would be <path_to_root>/model_inputs_outputs/
 MODEL_INPUTS_OUTPUTS = os.environ.get(
     "MODEL_INPUTS_OUTPUTS_PATH", os.path.join(ROOT_DIR, "model_inputs_outputs/")
 )
