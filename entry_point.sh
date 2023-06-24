@@ -34,8 +34,8 @@ case $command in
   *)
     echo "Invalid or missing command. Please specify one of the following commands:"
     echo "train: Train the model"
-    echo "predict: Make predictions with the model"
-    echo "serve: Serve the model for inference"
+    echo "predict: Make batch predictions with the model"
+    echo "serve: Serve the model for online inference"
     echo "standby: Run the container in standby mode to keep the container running without doing anything"
     exit 1
     ;;
