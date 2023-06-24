@@ -331,3 +331,45 @@ def test_validate_invalid_schema_dict(schema_dict):
     invalid_schema["schemaVersion"] = 2.0
     with pytest.raises(ValueError):
         validate_schema_dict(invalid_schema)
+
+
+def test_duplicate_feature_names():
+    """
+    Test that the validation fails when duplicate feature names are present.
+    """
+    # Example of an invalid schema with duplicate feature names
+    invalid_schema = {
+        "title": "test dataset",
+        "description": "test dataset",
+        "modelCategory": "binary_classification",
+        "schemaVersion": 1.0,
+        "inputDataFormat": "CSV",
+        "id": {"name": "id", "description": "unique identifier."},
+        "target": {
+            "name": "target_field",
+            "description": "some target desc.",
+            "classes": ["A", "B"],
+            "positiveClass": "A",
+        },
+        "features": [
+            {
+                "name": "duplicated_feature_name",
+                "description": "some desc.",
+                "dataType": "NUMERIC",
+                "example": 50,
+                "nullable": True,
+            },
+            {
+                "name": "duplicated_feature_name",
+                "description": "some desc.",
+                "dataType": "NUMERIC",
+                "example": 0.5,
+                "nullable": False,
+            },
+        ],
+    }
+
+    with pytest.raises(ValueError) as exc_info:
+        validate_schema_dict(invalid_schema)
+
+    assert "duplicated_feature_name" in str(exc_info.value)
