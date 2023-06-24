@@ -14,7 +14,7 @@ def test_run_training(
     input_schema_dir: str,
     model_config_file_path: str,
     train_dir: str,
-    pipeline_config_file_path: str,
+    preprocessing_config_file_path: str,
     default_hyperparameters_file_path: str,
     hpt_specs_file_path: str,
     explainer_config_file_path: str,
@@ -34,7 +34,7 @@ def test_run_training(
         input_schema_dir (str): Path to the input schema directory.
         model_config_file_path (str): Path to the model configuration file.
         train_dir (str): Path to the training directory.
-        pipeline_config_file_path (str): Path to the pipeline configuration file.
+        preprocessing_config_file_path (str): Path to the pipeline configuration file.
         default_hyperparameters_file_path (str): Path to the default
             hyperparameters file.
         hpt_specs_file_path (str): Path to the hyperparameter tuning
@@ -56,7 +56,7 @@ def test_run_training(
         saved_schema_path=saved_schema_path,
         model_config_file_path=model_config_file_path,
         train_dir=train_dir,
-        pipeline_config_file_path=pipeline_config_file_path,
+        preprocessing_config_file_path=preprocessing_config_file_path,
         pipeline_file_path=pipeline_file_path,
         target_encoder_file_path=target_encoder_file_path,
         predictor_file_path=predictor_file_path,

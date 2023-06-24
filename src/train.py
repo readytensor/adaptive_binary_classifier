@@ -11,6 +11,7 @@ from prediction.predictor_model import (
 )
 from preprocessing.preprocess import (
     handle_class_imbalance,
+    insert_nulls_in_nullable_features,
     save_pipeline_and_target_encoder,
     train_pipeline_and_target_encoder,
     transform_data,
@@ -27,7 +28,7 @@ def run_training(
     saved_schema_path: str = paths.SAVED_SCHEMA_PATH,
     model_config_file_path: str = paths.MODEL_CONFIG_FILE_PATH,
     train_dir: str = paths.TRAIN_DIR,
-    pipeline_config_file_path: str = paths.PREPROCESSING_CONFIG_FILE_PATH,
+    preprocessing_config_file_path: str = paths.PREPROCESSING_CONFIG_FILE_PATH,
     pipeline_file_path: str = paths.PIPELINE_FILE_PATH,
     target_encoder_file_path: str = paths.TARGET_ENCODER_FILE_PATH,
     predictor_file_path: str = paths.PREDICTOR_FILE_PATH,
@@ -47,7 +48,7 @@ def run_training(
         model_config_file_path (str, optional): The path of the model
             configuration file.
         train_dir (str, optional): The directory path of the train data.
-        pipeline_config_file_path (str, optional): The path of the preprocessing
+        preprocessing_config_file_path (str, optional): The path of the preprocessing
             configuration file.
         pipeline_file_path (str, optional): The path where to save the pipeline.
         target_encoder_file_path (str, optional): The path where to save the
@@ -100,10 +101,19 @@ def run_training(
             validated_data, val_pct=model_config["validation_split"]
         )
 
+        logger.info("Loading preprocessing config...")
+        preprocessing_config = read_json_as_dict(preprocessing_config_file_path)
+
+        # insert nulls in nullable features if no nulls exist in train data
+        logger.info("Inserting nulls in nullable features if not present...")
+        train_split_with_nulls = insert_nulls_in_nullable_features(
+            train_split, data_schema, preprocessing_config
+        )
+
         # fit and transform using pipeline and target encoder, then save them
         logger.info("Training preprocessing pipeline and label encoder...")
         pipeline, target_encoder = train_pipeline_and_target_encoder(
-            data_schema, train_split, pipeline_config_file_path
+            data_schema, train_split_with_nulls, preprocessing_config
         )
         transformed_train_inputs, transformed_train_targets = transform_data(
             pipeline, target_encoder, train_split

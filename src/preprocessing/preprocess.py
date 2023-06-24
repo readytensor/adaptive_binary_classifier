@@ -1,5 +1,6 @@
-from typing import Any, Tuple, Union
+from typing import Any, Dict, Tuple, Union
 
+import numpy as np
 import pandas as pd
 from imblearn.over_sampling import SMOTE
 
@@ -17,11 +18,10 @@ from preprocessing.target_encoder import (
     train_target_encoder,
     transform_targets,
 )
-from utils import read_json_as_dict
 
 
 def train_pipeline_and_target_encoder(
-    data_schema: Any, train_split: pd.DataFrame, pipeline_config_file_path: str
+    data_schema: Any, train_split: pd.DataFrame, preprocessing_config: Dict
 ) -> Tuple[Any, Any]:
     """
     Train the pipeline and target encoder
@@ -29,15 +29,14 @@ def train_pipeline_and_target_encoder(
     Args:
         data_schema (Any): A dictionary containing the data schema.
         train_split (pd.DataFame): A pandas DataFrame containing the train data split.
+        preprocessing_config (Dict): A dictionary containing the preprocessing params.
 
     Returns:
         A tuple containing the pipeline and target encoder.
     """
-    pipeline_config = read_json_as_dict(pipeline_config_file_path)
-
     # create input trnasformation pipeline and target encoder
     preprocess_pipeline = get_preprocess_pipeline(
-        data_schema=data_schema, pipeline_config=pipeline_config
+        data_schema=data_schema, preprocessing_config=preprocessing_config
     )
     target_encoder = get_target_encoder(data_schema=data_schema)
 
@@ -137,3 +136,31 @@ def handle_class_imbalance(
         transformed_data, transformed_labels
     )
     return balanced_data, balanced_labels
+
+
+def insert_nulls_in_nullable_features(
+    data: pd.DataFrame, data_schema: Any, preprocessing_config: Dict
+) -> pd.DataFrame:
+    """
+    Inserts nulls into specified columns of a DataFrame if nulls are not
+    already present.
+
+    Args:
+        data (pd.DataFrame): training data.
+        schema: schema provider object.
+        preprocess_config (dict): preprocessing configuration dictionary.
+
+    Returns:
+        pd.DataFrame: Transformed DataFrame with inserted nulls.
+    """
+    data_copy = data.copy()
+    nullable_columns = data_schema.nullable_features
+    perc_inserted_nulls = preprocessing_config.get("perc_inserted_nulls", 0.05)
+
+    for column in nullable_columns:
+        # Check if the column doesn't already contain any nulls
+        if pd.isnull(data_copy[column]).sum() == 0:
+            mask = np.random.rand(len(data_copy)) < perc_inserted_nulls
+            data_copy.loc[mask, column] = None
+
+    return data_copy

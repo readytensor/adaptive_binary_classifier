@@ -11,7 +11,7 @@ def test_integration_run_batch_predictions_without_hpt(
     input_schema_dir,
     model_config_file_path,
     train_dir,
-    pipeline_config_file_path,
+    preprocessing_config_file_path,
     test_dir,
     sample_test_data,
     schema_provider,
@@ -50,6 +50,7 @@ def test_integration_run_batch_predictions_without_hpt(
     pipeline_file_path = str(tmpdir.join("pipeline.joblib"))
     target_encoder_file_path = str(tmpdir.join("target_encoder.joblib"))
     predictor_file_path = str(tmpdir.join("predictor.joblib"))
+    print("run training")
 
     # Run the training process without hyperparameter tuning
     run_training(
@@ -57,12 +58,13 @@ def test_integration_run_batch_predictions_without_hpt(
         saved_schema_path=saved_schema_path,
         model_config_file_path=model_config_file_path,
         train_dir=train_dir,
-        pipeline_config_file_path=pipeline_config_file_path,
+        preprocessing_config_file_path=preprocessing_config_file_path,
         pipeline_file_path=pipeline_file_path,
         target_encoder_file_path=target_encoder_file_path,
         predictor_file_path=predictor_file_path,
         default_hyperparameters_file_path=default_hyperparameters_file_path,
     )
+    print("ran training")
 
     # Create temporary paths for prediction
     predictions_file_path = str(tmpdir.join("predictions.csv"))

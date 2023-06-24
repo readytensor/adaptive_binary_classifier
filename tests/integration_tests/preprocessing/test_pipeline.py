@@ -10,13 +10,13 @@ from src.preprocessing.pipeline import (
 )
 
 
-def test_get_preprocess_pipeline(schema_provider, pipeline_config):
+def test_get_preprocess_pipeline(schema_provider, preprocessing_config):
     """
     Test if the get_preprocess_pipeline function returns a valid preprocessing pipeline
     for the given schema and input data.
     """
     try:
-        pipeline = get_preprocess_pipeline(schema_provider, pipeline_config)
+        pipeline = get_preprocess_pipeline(schema_provider, preprocessing_config)
     except Exception as exc:
         pytest.fail(
             f"Unexpected error while testing get_preprocess_pipeline: {str(exc)}"
@@ -26,9 +26,9 @@ def test_get_preprocess_pipeline(schema_provider, pipeline_config):
 
 
 @pytest.fixture
-def pipeline(schema_provider, pipeline_config):
+def pipeline(schema_provider, preprocessing_config):
     """Creating a preprocessing pipeline for testing"""
-    return get_preprocess_pipeline(schema_provider, pipeline_config)
+    return get_preprocess_pipeline(schema_provider, preprocessing_config)
 
 
 def test_train_pipeline(pipeline, sample_data):
@@ -124,7 +124,7 @@ def test_pipeline_with_missing_values(pipeline):
     ), "Transformed data should not have any NaN values"
 
 
-def test_pipeline_with_outliers(schema_provider, pipeline_config):
+def test_pipeline_with_outliers(schema_provider, preprocessing_config):
     """
     Test the pipeline with a DataFrame that has outlier values in the numeric features.
     This test will help you ensure that the outlier clipping step is working as
@@ -140,7 +140,7 @@ def test_pipeline_with_outliers(schema_provider, pipeline_config):
             "target_field": ["A", "B", "A", "B", "A"],
         }
     )
-    pipeline = get_preprocess_pipeline(schema_provider, pipeline_config)
+    pipeline = get_preprocess_pipeline(schema_provider, preprocessing_config)
     trained_pipeline = train_pipeline(pipeline, data_with_outliers)
     transformed_data = transform_inputs(trained_pipeline, data_with_outliers)
 
@@ -149,11 +149,11 @@ def test_pipeline_with_outliers(schema_provider, pipeline_config):
     assert transformed_data["numeric_feature_1"].max() <= 4.0
 
     # check with tighter bounds on values
-    pipeline_config["numeric_transformers"]["outlier_clipper"] = {
+    preprocessing_config["numeric_transformers"]["outlier_clipper"] = {
         "min_val": -3.0,
         "max_val": 3.0,
     }
-    pipeline = get_preprocess_pipeline(schema_provider, pipeline_config)
+    pipeline = get_preprocess_pipeline(schema_provider, preprocessing_config)
     trained_pipeline = train_pipeline(pipeline, data_with_outliers)
     transformed_data = transform_inputs(trained_pipeline, data_with_outliers)
 
@@ -162,7 +162,7 @@ def test_pipeline_with_outliers(schema_provider, pipeline_config):
     assert transformed_data["numeric_feature_1"].max() <= 3.0
 
 
-def test_pipeline_with_rare_labels(schema_provider, pipeline_config):
+def test_pipeline_with_rare_labels(schema_provider, preprocessing_config):
     """
     Test the pipeline with a DataFrame that has rare labelsin the categorical features.
     This test will help you ensure that the rare label encoding step is working
@@ -170,7 +170,7 @@ def test_pipeline_with_rare_labels(schema_provider, pipeline_config):
     """
     # labels which occur less than 20% of the time are considered rare, they will
     # be grouped
-    pipeline_config["categorical_transformers"]["rare_label_encoder"]["tol"] = 0.2
+    preprocessing_config["categorical_transformers"]["rare_label_encoder"]["tol"] = 0.2
 
     data_with_rare_labels = pd.DataFrame(
         {
@@ -182,7 +182,7 @@ def test_pipeline_with_rare_labels(schema_provider, pipeline_config):
             "target_field": ["A", "B", "A", "B", "A", "A", "B", "A", "B", "A"],
         }
     )
-    pipeline = get_preprocess_pipeline(schema_provider, pipeline_config)
+    pipeline = get_preprocess_pipeline(schema_provider, preprocessing_config)
     trained_pipeline = train_pipeline(pipeline, data_with_rare_labels)
     transformed_data = transform_inputs(trained_pipeline, data_with_rare_labels)
 
@@ -236,13 +236,13 @@ def test_pipeline_with_only_numeric_features(pipeline):
     assert "numeric_feature_2" in transformed_data.columns
 
 
-def test_pipeline_with_only_categorical_features(schema_provider, pipeline_config):
+def test_pipeline_with_only_categorical_features(schema_provider, preprocessing_config):
     """
     Test the pipeline with a DataFrame that has only categorical features.
     This test will help you ensure that the pipeline can handle the case when there
     are no numeric features to preprocess.
     """
-    pipeline = get_preprocess_pipeline(schema_provider, pipeline_config)
+    pipeline = get_preprocess_pipeline(schema_provider, preprocessing_config)
     categorical_only_data = pd.DataFrame(
         {
             "id": range(1, 6),
@@ -256,11 +256,11 @@ def test_pipeline_with_only_categorical_features(schema_provider, pipeline_confi
     assert transformed_data is not None, "Preprocessed data should not be None"
 
 
-def test_pipeline_drops_all_nan_numeric_columns(schema_provider, pipeline_config):
+def test_pipeline_drops_all_nan_numeric_columns(schema_provider, preprocessing_config):
     """
     Test if the pipeline drops numeric columns where all values are NaN.
     """
-    pipeline = get_preprocess_pipeline(schema_provider, pipeline_config)
+    pipeline = get_preprocess_pipeline(schema_provider, preprocessing_config)
     df = pd.DataFrame(
         {
             "numeric_feature_1": [None, None, None, None],
@@ -277,11 +277,13 @@ def test_pipeline_drops_all_nan_numeric_columns(schema_provider, pipeline_config
     assert "numeric_feature_2" in transformed.columns  # This column should remain
 
 
-def test_pipeline_drops_all_nan_categorical_columns(schema_provider, pipeline_config):
+def test_pipeline_drops_all_nan_categorical_columns(
+    schema_provider, preprocessing_config
+):
     """
     Test if the pipeline drops categorical columns where all values are NaN.
     """
-    pipeline = get_preprocess_pipeline(schema_provider, pipeline_config)
+    pipeline = get_preprocess_pipeline(schema_provider, preprocessing_config)
     df = pd.DataFrame(
         {
             "numeric_feature_1": [1, 2, 3, 4],
@@ -298,12 +300,14 @@ def test_pipeline_drops_all_nan_categorical_columns(schema_provider, pipeline_co
     assert "numeric_feature_1" in transformed.columns  # This column should remain
 
 
-def test_pipeline_raises_value_error_for_all_nan_data(schema_provider, pipeline_config):
+def test_pipeline_raises_value_error_for_all_nan_data(
+    schema_provider, preprocessing_config
+):
     """
     Test if the pipeline raises a ValueError when given data only contains columns with
     all missing values.
     """
-    pipeline = get_preprocess_pipeline(schema_provider, pipeline_config)
+    pipeline = get_preprocess_pipeline(schema_provider, preprocessing_config)
     df = pd.DataFrame(
         {
             "numeric_feature_1": [None, None, None, None],

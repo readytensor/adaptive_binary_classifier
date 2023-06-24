@@ -48,25 +48,25 @@ def val_split_provider():
 
 
 def test_train_pipeline_and_target_encoder(
-    schema_provider, train_split_provider, pipeline_config_file_path
+    schema_provider, train_split_provider, preprocessing_config
 ):
     """Test the training of the pipeline and target encoder."""
     pipeline, target_encoder = train_pipeline_and_target_encoder(
-        schema_provider, train_split_provider, pipeline_config_file_path
+        schema_provider, train_split_provider, preprocessing_config
     )
     assert pipeline is not None
     assert target_encoder is not None
 
 
 def test_transform_data_with_train_split(
-    schema_provider, train_split_provider, pipeline_config_file_path
+    schema_provider, train_split_provider, preprocessing_config
 ):
     """
     Test if train data is properly transformed using the preprocessing pipeline
     and target encoder.
     """
     preprocess_pipeline, target_encoder = train_pipeline_and_target_encoder(
-        schema_provider, train_split_provider, pipeline_config_file_path
+        schema_provider, train_split_provider, preprocessing_config
     )
     transformed_inputs, transformed_targets = transform_data(
         preprocess_pipeline, target_encoder, train_split_provider
@@ -78,14 +78,14 @@ def test_transform_data_with_train_split(
 
 
 def test_transform_data_with_valid_split(
-    schema_provider, train_split_provider, pipeline_config_file_path, val_split_provider
+    schema_provider, train_split_provider, preprocessing_config, val_split_provider
 ):
     """
     Test if validation data is properly transformed using the preprocessing pipeline and
     target encoder.
     """
     preprocess_pipeline, target_encoder = train_pipeline_and_target_encoder(
-        schema_provider, train_split_provider, pipeline_config_file_path
+        schema_provider, train_split_provider, preprocessing_config
     )
     transformed_inputs, transformed_targets = transform_data(
         preprocess_pipeline, target_encoder, val_split_provider
@@ -97,14 +97,14 @@ def test_transform_data_with_valid_split(
 
 
 def test_save_and_load_pipeline_and_target_encoder(
-    schema_provider, train_split_provider, pipeline_config_file_path
+    schema_provider, train_split_provider, preprocessing_config
 ):
     """
     Test that the trained pipeline and target encoder can be saved and loaded correctly,
     and that the transformation results before and after saving/loading are the same.
     """
     preprocess_pipeline, target_encoder = train_pipeline_and_target_encoder(
-        schema_provider, train_split_provider, pipeline_config_file_path
+        schema_provider, train_split_provider, preprocessing_config
     )
     transformed_inputs, transformed_targets = transform_data(
         preprocess_pipeline, target_encoder, train_split_provider
@@ -129,7 +129,7 @@ def test_save_and_load_pipeline_and_target_encoder(
 
 
 def test_handle_class_imbalance(
-    schema_provider, train_split_provider, pipeline_config_file_path
+    schema_provider, train_split_provider, preprocessing_config
 ):
     """
     Test if class imbalance is properly handled using SMOTE.
@@ -137,7 +137,7 @@ def test_handle_class_imbalance(
     and that the counts of each class are approximately equal.
     """
     preprocess_pipeline, target_encoder = train_pipeline_and_target_encoder(
-        schema_provider, train_split_provider, pipeline_config_file_path
+        schema_provider, train_split_provider, preprocessing_config
     )
     transformed_inputs, transformed_targets = transform_data(
         preprocess_pipeline, target_encoder, train_split_provider

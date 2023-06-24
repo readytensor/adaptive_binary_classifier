@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any, List
 
+import pytest
 from pandas import DataFrame
 from py.path import local as LocalPath
 
@@ -39,6 +40,7 @@ def test_build_explainer(transformed_train_inputs: DataFrame, predictor: Any) ->
     assert shap_explainer is not None
 
 
+@pytest.mark.slow
 def test_get_explanations(
     transformed_test_inputs: DataFrame, predictor: Any, class_names: List[str]
 ) -> None:
@@ -126,6 +128,7 @@ def test_load_explainer(
     assert loaded_explainer._explainer_data.shape == transformed_train_inputs.shape
 
 
+@pytest.mark.slow
 def test_get_explanations_from_explainer(
     transformed_test_inputs: DataFrame,
     explainer_config_file_path: str,
@@ -160,6 +163,7 @@ def test_get_explanations_from_explainer(
         assert "featureScores" in explanation
 
 
+@pytest.mark.slow
 def test_explanations_from_loaded_explainer(
     transformed_train_inputs: DataFrame,
     explainer_config_file_path: str,

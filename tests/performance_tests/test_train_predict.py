@@ -60,7 +60,7 @@ def run_training_and_record(
     input_schema_dir: str,
     train_dir: str,
     model_config_file_path: str,
-    pipeline_config_file_path: str,
+    preprocessing_config_file_path: str,
     default_hyperparameters_file_path: str,
     hpt_specs_file_path: str,
     explainer_config_file_path: str,
@@ -72,7 +72,7 @@ def run_training_and_record(
         input_schema_dir (str): Path to input schema directory.
         train_dir (str): Path to training data directory.
         model_config_file_path (str): Path to model configuration file.
-        pipeline_config_file_path (str): Path to pipeline configuration file.
+        preprocessing_config_file_path (str): Path to pipeline configuration file.
         default_hyperparameters_file_path (str): Path to default hyperparameters file.
         hpt_specs_file_path (str): Path to hyperparameter tuning specifications file.
         explainer_config_file_path (str): Path to explainer configuration file.
@@ -99,7 +99,7 @@ def run_training_and_record(
         saved_schema_path=saved_schema_path,
         model_config_file_path=model_config_file_path,
         train_dir=train_dir,
-        pipeline_config_file_path=pipeline_config_file_path,
+        preprocessing_config_file_path=preprocessing_config_file_path,
         pipeline_file_path=pipeline_file_path,
         target_encoder_file_path=target_encoder_file_path,
         predictor_file_path=predictor_file_path,
@@ -193,7 +193,7 @@ def run_prediction_and_record(
 def test_train_predict_performance(
     tmpdir,
     model_config_file_path: str,
-    pipeline_config_file_path: str,
+    preprocessing_config_file_path: str,
     default_hyperparameters_file_path: str,
     hpt_specs_file_path: str,
     explainer_config_file_path: str,
@@ -209,7 +209,7 @@ def test_train_predict_performance(
     Args:
         tmpdir: Temporary directory.
         model_config_file_path (str): Path to model configuration file.
-        pipeline_config_file_path (str): Path to pipeline configuration file.
+        preprocessing_config_file_path (str): Path to pipeline configuration file.
         default_hyperparameters_file_path (str): Path to default hyperparameters file.
         hpt_specs_file_path (str): Path to hyperparameter tuning specifications file.
         explainer_config_file_path (str): Path to explainer configuration file.
@@ -240,7 +240,7 @@ def test_train_predict_performance(
             input_schema_dir,
             train_dir,
             model_config_file_path,
-            pipeline_config_file_path,
+            preprocessing_config_file_path,
             default_hyperparameters_file_path,
             hpt_specs_file_path,
             explainer_config_file_path,
