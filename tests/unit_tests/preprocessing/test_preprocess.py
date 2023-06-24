@@ -10,6 +10,7 @@ from src.preprocessing.preprocess import (
     save_pipeline_and_target_encoder,
     train_pipeline_and_target_encoder,
     transform_data,
+    insert_nulls_in_nullable_features
 )
 
 
@@ -155,3 +156,81 @@ def test_handle_class_imbalance(
     # Ensure that the counts of each class are approximately equal
     class_counts = pd.Series(balanced_labels).value_counts()
     assert max(class_counts) - min(class_counts) <= 1
+
+
+def test_insert_nulls_in_nullable_features(schema_provider, preprocessing_config):
+    # Set a seed to ensure reproducibility of random operations
+    np.random.seed(0)
+
+    # Create a DataFrame - no nulls in `numeric_feature_1` and
+    # `categorical_feature_1` which are nullable
+    train_data = pd.DataFrame(
+        {
+            "id": range(1, 6),
+            "numeric_feature_1": [10, 20, 30, 40, 50],
+            "numeric_feature_2": [1.0, -2.0, 3, -4, 5],
+            "categorical_feature_1": ["A", "B", "C", "A", "B"],
+            "categorical_feature_2": ["P", "Q", "R", "S", "T"],
+            "target_field": ["A", "B", "A", "B", "A"],
+        }
+    )
+
+    # Ensure there were no nulls before the function call
+    assert train_data.isnull().sum().sum() == 0, \
+        "Input DataFrame already contains null values."
+
+    # Call the function and get the result
+    df = insert_nulls_in_nullable_features(
+        train_data, schema_provider, preprocessing_config)
+
+    # Get nullable features from the schema
+    nullable_features = schema_provider.nullable_features
+
+    # Ensure that the nulls were only inserted in the nullable features
+    null_columns = df.columns[df.isna().any()].tolist()
+    assert set(null_columns) == set(nullable_features), \
+        "Nulls were inserted in non-nullable columns"
+
+    # Check if at least one null was added in each nullable feature
+    for col in nullable_features:
+        assert df[col].isnull().sum() > 0, f"No nulls were inserted in column {col}"
+
+    # Check if non-nullable features do not contain nulls
+    non_nullable_features = schema_provider.non_nullable_features
+    for col in non_nullable_features:
+        assert df[col].isnull().sum() == 0, \
+            f"Nulls were inserted in non-nullable column {col}"
+
+
+def test_insert_nulls_in_nullable_features_no_insert(
+        schema_provider, preprocessing_config):
+    # Set a seed to ensure reproducibility of random operations
+    np.random.seed(0)
+
+    # Create a DataFrame
+    # Nullable feature `numeric_feature_1` contains 1 null
+    # Nullable feature `categorical_feature_1` contains 2 nulls
+    train_data = pd.DataFrame(
+        {
+            "id": range(1, 6),
+            "numeric_feature_1": [10, 20, np.nan, 40, 50], 
+            "numeric_feature_2": [1.0, -2.0, 3, -4, 5],
+            "categorical_feature_1": ["A", np.nan, "C", "A", np.nan],
+            "categorical_feature_2": ["P", "Q", "R", "S", "T"],
+            "target_field": ["A", "B", "A", "B", "A"],
+        }
+    )
+
+    # Record the number of nulls in the DataFrame
+    original_null_count = train_data.isnull().sum()
+
+    # Call the function and get the result
+    df = insert_nulls_in_nullable_features(
+        train_data, schema_provider, preprocessing_config)
+
+    # Record the number of nulls in the resulting DataFrame
+    new_null_count = df.isnull().sum()
+
+    # Check that no new nulls were added to the columns that already had nulls
+    assert original_null_count.equals(new_null_count), \
+        "New nulls were inserted into columns that already contained nulls"
