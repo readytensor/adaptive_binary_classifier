@@ -3,6 +3,7 @@ from typing import Any, Dict, Tuple, Union
 import numpy as np
 import pandas as pd
 from imblearn.over_sampling import SMOTE
+import random
 
 from preprocessing.pipeline import (
     get_preprocess_pipeline,
@@ -161,6 +162,12 @@ def insert_nulls_in_nullable_features(
         # Check if the column doesn't already contain any nulls
         if pd.isnull(data_copy[column]).sum() == 0:
             mask = np.random.rand(len(data_copy)) < perc_inserted_nulls
-            data_copy.loc[mask, column] = None
+            # If no nulls were inserted due to probabilities, insert at least one
+            if mask.sum() == 0:
+                # Randomly select one index to insert a null
+                null_idx = random.choice(data_copy.index)
+                data_copy.loc[null_idx, column] = None
+            else:
+                data_copy.loc[mask, column] = None
 
     return data_copy
