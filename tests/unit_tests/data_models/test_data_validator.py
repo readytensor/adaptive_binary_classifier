@@ -208,6 +208,77 @@ def test_validate_data_non_nullable_feature_contains_null_values(
     """
     null_feature_data = sample_train_data.copy()
     null_feature_data.loc[0, "numeric_feature_2"] = None
-    print(null_feature_data.head())
     with pytest.raises(ValueError):
         validate_data(null_feature_data, schema_provider, True)
+
+
+def test_validate_data_numeric_feature_contains_non_numeric_value(
+    schema_provider: Any,
+    sample_train_data: pd.DataFrame,
+):
+    """
+    Test the `validate_data` function with a numeric feature containing non-numeric
+    values.
+
+    The test ensures that when a numeric feature in the input DataFrame contains
+    non-numeric values, a ValueError is raised.
+
+    Args:
+        schema_provider (BinaryClassificationSchema): The schema provider instance
+                                                which encapsulates the data schema.
+        sample_train_data (pd.DataFrame): A sample training DataFrame with a
+                                        numeric feature containing non-numeric values.
+    """
+    non_numeric_feature_data = sample_train_data.copy()
+    non_numeric_feature_data.loc[0, "numeric_feature_2"] = "non-numeric"
+    with pytest.raises(ValueError):
+        validate_data(non_numeric_feature_data, schema_provider, True)
+
+
+def test_validate_data_all_target_classes_present_in_target_column(
+    schema_provider: Any,
+    sample_train_data: pd.DataFrame,
+):
+    """
+    Test the `validate_data` function with the training data's target column not containing
+    all target classes.
+
+    The test ensures that when the training data's target column does not contain all
+    target classes specified in the schema, a ValueError is raised.
+
+    Args:
+        schema_provider (BinaryClassificationSchema): The schema provider instance
+                                                      which encapsulates the data schema.
+        sample_train_data (pd.DataFrame): A sample training DataFrame with target column
+                                          missing one or more target classes.
+    """
+    incomplete_target_class_data = sample_train_data.copy()
+    incomplete_target_class_data[schema_provider.target] = \
+        schema_provider.target_classes[0]
+
+    with pytest.raises(ValueError):
+        validate_data(incomplete_target_class_data, schema_provider, True)
+
+
+def test_validate_data_unexpected_target_classes(
+    schema_provider: Any,
+    sample_train_data: pd.DataFrame,
+):
+    """
+    Test the `validate_data` function with unexpected target classes in the target
+    column.
+
+    The test ensures that when the target column in the input DataFrame contains
+    classes not defined in the schema, a ValueError is raised.
+
+    Args:
+        schema_provider (BinaryClassificationSchema): The schema provider instance
+                                                which encapsulates the data schema.
+        sample_train_data (pd.DataFrame): A sample training DataFrame with an
+                                          unexpected target class.
+    """
+    unexpected_target_class_data = sample_train_data.copy()
+    unexpected_target_class_data.loc[0, schema_provider.target] = 'unexpected_class'
+
+    with pytest.raises(ValueError):
+        validate_data(unexpected_target_class_data, schema_provider, True)

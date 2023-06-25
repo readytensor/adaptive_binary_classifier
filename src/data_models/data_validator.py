@@ -1,4 +1,5 @@
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 from pydantic import BaseModel, validator
 
 from schema.data_schema import BinaryClassificationSchema
@@ -14,8 +15,13 @@ def get_data_validator(schema: BinaryClassificationSchema, is_train: bool) -> Ba
     2. That the data under ID field is unique.
     3. If `is_train` is `True`, that the input DataFrame contains the target field
         specified in the schema.
-    4. That the input DataFrame contains all feature fields specified in the schema.
-    5. For non-nullable features, that they do not contain null values.
+    4. If `is_train` is `True`, that all classes defined in the schema are present in
+       the target column of the DataFrame.
+    5. If `is_train` is `True`, that only the target classes specified in the
+       schema are present in the target column in training data.
+    6. That the input DataFrame contains all feature fields specified in the schema.
+    7. For non-nullable features, that they do not contain null values.
+    8. That numeric features do not contain non-numeric values.
 
     If any of these checks fail, the validator will raise a ValueError.
 
@@ -47,10 +53,27 @@ def get_data_validator(schema: BinaryClassificationSchema, is_train: bool) -> Ba
                     f"ID field '{schema.id}' does not contain unique values"
                 )
 
-            if is_train and schema.target not in data.columns:
-                raise ValueError(
-                    f"Target field '{schema.target}' is not present in the given data"
-                )
+            if is_train:
+                if schema.target not in data.columns:
+                    raise ValueError(
+                        f"Target field '{schema.target}' is not present "
+                        "in the given data"
+                    )
+
+                unique_target_values = set(data[schema.target].unique())
+                missing_classes = set(schema.target_classes) - unique_target_values
+                if missing_classes:
+                    raise ValueError(
+                        "Target column in the train data does not contain all classes"
+                        f" defined in the schema. Missing classes: {missing_classes}"
+                    )
+
+                for unique_val in unique_target_values:
+                    if unique_val not in schema.target_classes:
+                        raise ValueError(
+                            f"Unexpected class '{unique_val}' in the target field. "
+                            f"Expected target classes are {schema.target_classes}."
+                        )
 
             for feature in schema.features:
                 if feature not in data.columns:
@@ -67,6 +90,12 @@ def get_data_validator(schema: BinaryClassificationSchema, is_train: bool) -> Ba
                 if data[feature].isnull().any():
                     raise ValueError(
                         f"Non-nullable feature '{feature}' contains null values"
+                    )
+
+            for feature in schema.numeric_features:
+                if not is_numeric_dtype(data[feature]):
+                    raise ValueError(
+                        f"Numeric feature '{feature}' contains non-numeric data"
                     )
 
             return data
