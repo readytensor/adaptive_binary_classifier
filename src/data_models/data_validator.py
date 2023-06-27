@@ -1,5 +1,5 @@
+import numpy as np
 import pandas as pd
-from pandas.api.types import is_numeric_dtype
 from pydantic import BaseModel, validator
 
 from schema.data_schema import BinaryClassificationSchema
@@ -60,7 +60,7 @@ def get_data_validator(schema: BinaryClassificationSchema, is_train: bool) -> Ba
                         "in the given data"
                     )
 
-                unique_target_values = set(data[schema.target].unique())
+                unique_target_values = set(data[schema.target].astype(str).unique())
                 missing_classes = set(schema.target_classes) - unique_target_values
                 if missing_classes:
                     raise ValueError(
@@ -93,7 +93,7 @@ def get_data_validator(schema: BinaryClassificationSchema, is_train: bool) -> Ba
                     )
 
             for feature in schema.numeric_features:
-                if not is_numeric_dtype(data[feature]):
+                if not all(data[feature].apply(lambda x: pd.isnull(x) or np.isreal(x))):
                     raise ValueError(
                         f"Numeric feature '{feature}' contains non-numeric data"
                     )
