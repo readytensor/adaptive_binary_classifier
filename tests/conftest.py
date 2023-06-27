@@ -194,7 +194,8 @@ def default_hyperparameters():
     """Fixture to load and return default hyperparameters"""
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     json_file_path = os.path.join(
-        cur_dir, "test_resources", "default_hyperparameters.json")
+        cur_dir, "test_resources", "default_hyperparameters.json"
+    )
     with open(json_file_path, "r", encoding="utf-8") as file:
         default_hps = json.load(file)
     return default_hps
@@ -211,7 +212,7 @@ def default_hyperparameters_file_path(default_hyperparameters, tmpdir):
 
 @pytest.fixture
 def hpt_specs():
-    """Fixture to load and return hyperparameter tuning config"""    
+    """Fixture to load and return hyperparameter tuning config"""
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     json_file_path = os.path.join(cur_dir, "test_resources", "hpt.json")
     with open(json_file_path, "r", encoding="utf-8") as file:
