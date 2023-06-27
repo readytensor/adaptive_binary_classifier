@@ -182,7 +182,7 @@ def run_training(
         err_msg = "Error occurred during training."
         # Log the error
         logger.error(f"{err_msg} Error: {str(exc)}")
-        # Log the error to the separate logging file 'train-error.log'
+        # Log the error to the separate logging file'
         log_error(message=err_msg, error=exc, error_fpath=paths.TRAIN_ERROR_FILE_PATH)
         # re-raise the error
         raise ValueError(f"{err_msg} Error: {str(exc)}") from exc
