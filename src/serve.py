@@ -50,7 +50,7 @@ def create_app(model_resources):
         err_msg = "Validation error with request data."
         # Log the error
         logger.error(f"{err_msg} Error: {str(exc)}")
-        # Log the error to the separate logging file'
+        # Log the error to the separate logging file
         log_error(message=err_msg, error=exc, error_fpath=paths.SERVE_ERROR_FILE_PATH)
         return JSONResponse(
             status_code=400,

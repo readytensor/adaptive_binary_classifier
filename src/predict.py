@@ -140,7 +140,7 @@ def run_batch_predictions(
 
     except Exception as exc:
         err_msg = "Error occurred during prediction."
-        # Log the error 
+        # Log the error
         logger.error(f"{err_msg} Error: {str(exc)}")
         # Log the error to the separate logging file
         log_error(message=err_msg, error=exc, error_fpath=paths.PREDICT_ERROR_FILE_PATH)
