@@ -60,7 +60,8 @@ def get_data_validator(schema: BinaryClassificationSchema, is_train: bool) -> Ba
                         "in the given data"
                     )
 
-                unique_target_values = set(data[schema.target].astype(str).unique())
+                # unique_target_values = set(data[schema.target].astype(str).unique())
+                unique_target_values = set(data[schema.target].unique())
                 missing_classes = set(schema.target_classes) - unique_target_values
                 if missing_classes:
                     raise ValueError(
