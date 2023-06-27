@@ -191,17 +191,18 @@ def model_config_file_path(model_config, tmpdir):
 
 @pytest.fixture
 def default_hyperparameters():
-    hyperparameters = {
-        "n_estimators": 200,
-        "min_samples_split": 8,
-        "min_samples_leaf": 4,
-    }
-    return hyperparameters
+    """Fixture to load and return default hyperparameters"""
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+    json_file_path = os.path.join(
+        cur_dir, "test_resources", "default_hyperparameters.json")
+    with open(json_file_path, "r", encoding="utf-8") as file:
+        default_hps = json.load(file)
+    return default_hps
 
 
 @pytest.fixture
 def default_hyperparameters_file_path(default_hyperparameters, tmpdir):
-    """Fixture to create and save a sample default_hyperparameters json"""
+    """Fixture to return default_hyperparameters file path in tmpdir"""
     config_file_path = tmpdir.join("default_hyperparameters.json")
     with open(config_file_path, "w") as file:
         json.dump(default_hyperparameters, file)
@@ -210,36 +211,12 @@ def default_hyperparameters_file_path(default_hyperparameters, tmpdir):
 
 @pytest.fixture
 def hpt_specs():
-    config = {
-        "num_trials": 5,
-        "hyperparameters": [
-            {
-                "name": "n_estimators",
-                "short_desc": "The number of trees in the forest.",
-                "type": "int",
-                "search_type": "uniform",
-                "range_low": 50,
-                "range_high": 500,
-            },
-            {
-                "name": "min_samples_split",
-                "short_desc": "Min. num of samples required to split an internal node",
-                "type": "int",
-                "search_type": "uniform",
-                "range_low": 2,
-                "range_high": 30,
-            },
-            {
-                "name": "min_samples_leaf",
-                "short_desc": "Min. num of samples required to be at a leaf node.",
-                "type": "int",
-                "search_type": "uniform",
-                "range_low": 1,
-                "range_high": 20,
-            },
-        ],
-    }
-    return config
+    """Fixture to load and return hyperparameter tuning config"""    
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+    json_file_path = os.path.join(cur_dir, "test_resources", "hpt.json")
+    with open(json_file_path, "r", encoding="utf-8") as file:
+        hpt_config = json.load(file)
+    return hpt_config
 
 
 @pytest.fixture
