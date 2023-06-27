@@ -1,9 +1,9 @@
+import random
 from typing import Any, Dict, Tuple, Union
 
 import numpy as np
 import pandas as pd
 from imblearn.over_sampling import SMOTE
-import random
 
 from preprocessing.pipeline import (
     get_preprocess_pipeline,
