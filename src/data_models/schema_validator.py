@@ -135,21 +135,21 @@ class SchemaModel(BaseModel):
                 f"features must have at least one field defined. Given {v}"
             )
         return v
-    
+
     @validator("features", allow_reuse=True)
     def unique_feature_names(cls, v):
         """
         Check that the feature names are unique.
         """
-        print("="*60)
-        print("v", v)
-        print("="*60)
         feature_names = [feature.name for feature in v]
-        duplicates = [item for item, count in Counter(feature_names).items() if count > 1]
+        duplicates = [
+            item for item, count in Counter(feature_names).items() if count > 1
+        ]
 
         if duplicates:
-            raise ValueError("Duplicate feature names found in schema: "
-                             f"`{', '.join(duplicates)}`")
+            raise ValueError(
+                "Duplicate feature names found in schema: " f"`{', '.join(duplicates)}`"
+            )
 
         return v
 
