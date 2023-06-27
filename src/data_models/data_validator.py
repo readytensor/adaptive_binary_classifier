@@ -60,7 +60,7 @@ def get_data_validator(schema: BinaryClassificationSchema, is_train: bool) -> Ba
                         "in the given data"
                     )
 
-                unique_target_values = set(data[schema.target].astype(str).unique())
+                unique_target_values = set(data[schema.target].unique())
                 missing_classes = set(schema.target_classes) - unique_target_values
                 if missing_classes:
                     raise ValueError(
@@ -119,5 +119,9 @@ def validate_data(
         pd.DataFrame: The validated data.
     """
     DataValidator = get_data_validator(data_schema, is_train)
-    validated_data = DataValidator(data=data)
-    return validated_data.data
+    try:
+        validated_data = DataValidator(data=data)
+        return validated_data.data
+    except ValueError as exc:
+        print("re-raising")
+        raise ValueError(f"Data validation failed: {str(exc)}") from exc

@@ -144,6 +144,8 @@ def run_batch_predictions(
         logger.error(f"{err_msg} Error: {str(exc)}")
         # Log the error to the separate logging file 'predict-error.log'
         log_error(message=err_msg, error=exc, error_fpath=paths.PREDICT_ERROR_FILE_PATH)
+        # re-raise the error
+        raise ValueError(f"{err_msg} Error: {str(exc)}") from exc
 
 
 if __name__ == "__main__":
