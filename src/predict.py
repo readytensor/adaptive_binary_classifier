@@ -55,6 +55,7 @@ def create_predictions_dataframe(
         return predictions_df
     predictions_df[prediction_field_name] = predictions_df[class_names].idxmax(axis=1)
     predictions_df.drop(class_names, axis=1, inplace=True)
+    raise Exception("test error in predict")
     return predictions_df
 
 
