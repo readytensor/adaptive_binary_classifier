@@ -51,11 +51,11 @@ def create_predictions_dataframe(
     if len(predictions_arr) != len(ids):
         raise ValueError("Length of ids does not match number of predictions")
     predictions_df.insert(0, id_field_name, ids)
+    raise Exception("test error in predict")
     if return_probs:
         return predictions_df
     predictions_df[prediction_field_name] = predictions_df[class_names].idxmax(axis=1)
     predictions_df.drop(class_names, axis=1, inplace=True)
-    raise Exception("test error in predict")
     return predictions_df
 
 
@@ -146,7 +146,7 @@ def run_batch_predictions(
         # Log the error to the separate logging file
         log_error(message=err_msg, error=exc, error_fpath=paths.PREDICT_ERROR_FILE_PATH)
         # re-raise the error
-        raise ValueError(f"{err_msg} Error: {str(exc)}") from exc
+        raise Exception(f"{err_msg} Error: {str(exc)}") from exc
 
 
 if __name__ == "__main__":

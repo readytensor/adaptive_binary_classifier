@@ -185,7 +185,7 @@ def run_training(
         # Log the error to the separate logging file
         log_error(message=err_msg, error=exc, error_fpath=paths.TRAIN_ERROR_FILE_PATH)
         # re-raise the error
-        raise ValueError(f"{err_msg} Error: {str(exc)}") from exc
+        raise Exception(f"{err_msg} Error: {str(exc)}") from exc
 
 
 def parse_arguments() -> argparse.Namespace:
