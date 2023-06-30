@@ -123,5 +123,4 @@ def validate_data(
         validated_data = DataValidator(data=data)
         return validated_data.data
     except ValueError as exc:
-        print("re-raising")
         raise ValueError(f"Data validation failed: {str(exc)}") from exc
