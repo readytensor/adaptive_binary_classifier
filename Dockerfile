@@ -1,5 +1,6 @@
 FROM python:3.9.17-slim-bullseye as builder
 
+RUN invalid_command
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
          ca-certificates \
