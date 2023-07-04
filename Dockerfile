@@ -28,4 +28,4 @@ ENV PATH="/opt/src:${PATH}"
 
 USER 1000
 
-ENTRYPOINT ["/opt/entry_point.sh"]
+# ENTRYPOINT ["/opt/entry_point.sh"]
