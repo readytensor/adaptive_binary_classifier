@@ -51,7 +51,6 @@ def create_predictions_dataframe(
     if len(predictions_arr) != len(ids):
         raise ValueError("Length of ids does not match number of predictions")
     predictions_df.insert(0, id_field_name, ids)
-    predictions_df[class_names[0]]=predictions_df[class_names[0]]+5.
     if return_probs:
         return predictions_df
     predictions_df[prediction_field_name] = predictions_df[class_names].idxmax(axis=1)
@@ -135,7 +134,7 @@ def run_batch_predictions(
         )
 
         logger.info("Saving predictions...")
-        save_dataframe_as_csv(dataframe=predictions_df, file_path=predictions_file_path)
+        # save_dataframe_as_csv(dataframe=predictions_df, file_path=predictions_file_path)
 
         logger.info("Batch predictions completed successfully")
 
