@@ -75,7 +75,7 @@ def run_training(
         # load and save schema
         logger.info("Loading and saving schema...")
         data_schema = load_json_data_schema(input_schema_dir)
-        save_schema(schema=data_schema, output_path=saved_schema_path)
+        # save_schema(schema=data_schema, output_path=saved_schema_path)
 
         # load model config
         logger.info("Loading model config...")
