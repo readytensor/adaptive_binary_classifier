@@ -41,7 +41,7 @@ OUTPUT_DIR = os.path.join(MODEL_INPUTS_OUTPUTS, "outputs")
 # Path to predictions directory inside outputs directory
 PREDICTIONS_DIR = os.path.join(OUTPUT_DIR, "predictions")
 # Name of the file containing the predictions
-PREDICTIONS_FILE_PATH = os.path.join(PREDICTIONS_DIR, "predictions.csv")
+PREDICTIONS_FILE_PATH = os.path.join(PREDICTIONS_DIR, "predictions.txt")
 # Path to HPT results directory inside outputs directory
 HPT_OUTPUTS_DIR = os.path.join(OUTPUT_DIR, "hpt_outputs")
 # Name of the hyperparameters results file
