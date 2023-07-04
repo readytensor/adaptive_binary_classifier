@@ -50,7 +50,7 @@ def create_predictions_dataframe(
     predictions_df = pd.DataFrame(predictions_arr, columns=class_names)
     if len(predictions_arr) != len(ids):
         raise ValueError("Length of ids does not match number of predictions")
-    predictions_df.insert(0, id_field_name, ids)
+    # predictions_df.insert(0, id_field_name, ids)
     if return_probs:
         return predictions_df
     predictions_df[prediction_field_name] = predictions_df[class_names].idxmax(axis=1)
