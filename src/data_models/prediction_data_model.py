@@ -1,9 +1,7 @@
-import sys
 import pandas as pd
 from pydantic import BaseModel, validator
 
 from schema.data_schema import BinaryClassificationSchema
-
 
 
 def get_predictions_validator(schema: BinaryClassificationSchema) -> BaseModel:
@@ -45,7 +43,7 @@ def get_predictions_validator(schema: BinaryClassificationSchema) -> BaseModel:
                     "ValueError: Malformed predictions file. "
                     f"ID field '{schema.id}' is not present in predictions file."
                 )
-            
+
             missing_classes = set(schema.target_classes) - set(data.columns)
             if missing_classes:
                 raise ValueError(
@@ -102,7 +100,7 @@ if __name__ == "__main__":
         "target": {
             "name": "target_field",
             "description": "some target desc.",
-            "classes": ["A", "B"]
+            "classes": ["A", "B"],
         },
         "features": [
             {
@@ -118,16 +116,16 @@ if __name__ == "__main__":
                 "dataType": "CATEGORICAL",
                 "categories": ["A", "B", "C"],
                 "nullable": True,
-            }
+            },
         ],
     }
     schema_provider = BinaryClassificationSchema(schema_dict)
-    predictions = pd.DataFrame({
-        "id": [1, 2, 3, 4, 5],
-        "A": [0.9, 0.2, 0.8, 0.1, 0.85],
-        "B": [0.1, 0.8, 0.2, 0.9, 0.15]
-    })
-
-    validated_data = validate_predictions(
-        predictions, schema_provider
+    predictions = pd.DataFrame(
+        {
+            "id": [1, 2, 3, 4, 5],
+            "A": [0.9, 0.2, 0.8, 0.1, 0.85],
+            "B": [0.1, 0.8, 0.2, 0.9, 0.15],
+        }
     )
+
+    validated_data = validate_predictions(predictions, schema_provider)
