@@ -24,7 +24,7 @@ def schema_dict():
         "target": {
             "name": "target_field",
             "description": "some target desc.",
-            "classes": ["A", "B"]
+            "classes": ["A", "B"],
         },
         "features": [
             {

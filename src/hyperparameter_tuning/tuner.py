@@ -11,14 +11,13 @@ from logger import get_logger
 from prediction.predictor_model import evaluate_predictor_model, train_predictor_model
 from utils import read_json_as_dict, save_dataframe_as_csv
 
-
 logger = get_logger(task_name="tune")
 
 
 def logger_callback(res):
-    logger.info(f'Iteration: {len(res.x_iters)}')
-    logger.info(f'Trial hyperparameters: {res.x}')
-    logger.info(f'Objective func value: {res.fun}')
+    logger.info(f"Iteration: {len(res.x_iters)}")
+    logger.info(f"Trial hyperparameters: {res.x}")
+    logger.info(f"Objective func value: {res.fun}")
 
 
 class SKOHyperparameterTuner:
