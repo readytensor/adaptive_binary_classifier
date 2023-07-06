@@ -5,6 +5,7 @@ import pandas as pd
 
 from config import paths
 from data_models.data_validator import validate_data
+from data_models.prediction_data_model import validate_predictions
 from logger import get_logger, log_error
 from prediction.predictor_model import load_predictor_model, predict_with_model
 from preprocessing.preprocess import load_pipeline_and_target_encoder, transform_data
@@ -133,8 +134,14 @@ def run_batch_predictions(
             return_probs=True,
         )
 
+        logger.info("Validating predictions...")
+        validated_predictions = validate_predictions(
+            predictions_df, data_schema
+        )
+
         logger.info("Saving predictions...")
-        save_dataframe_as_csv(dataframe=predictions_df, file_path=predictions_file_path)
+        save_dataframe_as_csv(
+            dataframe=validated_predictions, file_path=predictions_file_path)
 
         logger.info("Batch predictions completed successfully")
 
