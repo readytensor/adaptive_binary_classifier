@@ -42,10 +42,12 @@ def test_integration_run_batch_predictions_without_hpt(
     """
     # extract paths to all config files
     model_config_file_path = config_file_paths_dict["model_config_file_path"]
-    preprocessing_config_file_path = \
-        config_file_paths_dict["preprocessing_config_file_path"]
-    default_hyperparameters_file_path = \
-        config_file_paths_dict["default_hyperparameters_file_path"]
+    preprocessing_config_file_path = config_file_paths_dict[
+        "preprocessing_config_file_path"
+    ]
+    default_hyperparameters_file_path = config_file_paths_dict[
+        "default_hyperparameters_file_path"
+    ]
     hpt_specs_file_path = config_file_paths_dict["hpt_specs_file_path"]
     explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
 
@@ -56,7 +58,6 @@ def test_integration_run_batch_predictions_without_hpt(
     predictor_file_path = resources_paths_dict["predictor_file_path"]
     hpt_results_file_path = resources_paths_dict["hpt_results_file_path"]
     explainer_file_path = resources_paths_dict["explainer_file_path"]
-
 
     # Run the training process without hyperparameter tuning
     run_tuning = False

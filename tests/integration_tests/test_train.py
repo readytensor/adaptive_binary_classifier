@@ -35,10 +35,12 @@ def test_run_training(
     """
     # extract paths to all config files
     model_config_file_path = config_file_paths_dict["model_config_file_path"]
-    preprocessing_config_file_path = \
-        config_file_paths_dict["preprocessing_config_file_path"]
-    default_hyperparameters_file_path = \
-        config_file_paths_dict["default_hyperparameters_file_path"]
+    preprocessing_config_file_path = config_file_paths_dict[
+        "preprocessing_config_file_path"
+    ]
+    default_hyperparameters_file_path = config_file_paths_dict[
+        "default_hyperparameters_file_path"
+    ]
     hpt_specs_file_path = config_file_paths_dict["hpt_specs_file_path"]
     explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
 

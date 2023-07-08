@@ -6,9 +6,13 @@ import string
 import numpy as np
 import pandas as pd
 import pytest
+from fastapi.testclient import TestClient
 
-from schema.data_schema import BinaryClassificationSchema
-from serve_utils import get_model_resources
+from src.schema.data_schema import BinaryClassificationSchema
+from src.serve import create_app
+from src.serve_utils import get_model_resources
+from src.train import run_training
+from src.xai.explainer import ShapClassificationExplainer
 
 
 @pytest.fixture
@@ -70,22 +74,14 @@ def schema_provider(schema_dict):
 def config_dir_path():
     """Fixture to create a sample config_dir_path"""
     cur_dir = os.path.dirname(os.path.abspath(__file__))
-    config_dir_path = os.path.join(
-        cur_dir,
-        "..",
-        "src",
-        "config"
-    )
+    config_dir_path = os.path.join(cur_dir, "..", "src", "config")
     return config_dir_path
 
 
 @pytest.fixture
 def model_config(config_dir_path):
     """Fixture to create a sample model_config json"""
-    model_config_file = os.path.join(
-        config_dir_path,
-        "model_config.json"
-    )
+    model_config_file = os.path.join(config_dir_path, "model_config.json")
     with open(model_config_file, "r", encoding="utf-8") as file:
         model_config = json.load(file)
     return model_config
@@ -94,10 +90,7 @@ def model_config(config_dir_path):
 @pytest.fixture
 def preprocessing_config(config_dir_path):
     """Fixture to create a preprocessing config"""
-    preprocessing_config_file = os.path.join(
-        config_dir_path,
-        "preprocessing.json"
-    )
+    preprocessing_config_file = os.path.join(config_dir_path, "preprocessing.json")
     with open(preprocessing_config_file, "r", encoding="utf-8") as file:
         pp_config = json.load(file)
     return pp_config
@@ -145,9 +138,11 @@ def sample_test_data(sample_data):
     N_test = int(len(sample_data) * 0.2)
     return sample_data.tail(N_test)
 
+
 @pytest.fixture
 def train_data_file_name():
     return "train.csv"
+
 
 @pytest.fixture
 def train_dir(sample_train_data, tmpdir, train_data_file_name):
@@ -161,6 +156,7 @@ def train_dir(sample_train_data, tmpdir, train_data_file_name):
 @pytest.fixture
 def test_data_file_name():
     return "test.csv"
+
 
 @pytest.fixture
 def test_dir(sample_test_data, tmpdir, test_data_file_name):
@@ -218,10 +214,7 @@ def default_hyperparameters_file_path(default_hyperparameters, tmpdir):
 @pytest.fixture
 def hpt_specs(config_dir_path):
     """Fixture to load and return hyperparameter tuning config"""
-    json_file_path = os.path.join(
-        config_dir_path,
-        "hpt.json"
-    )
+    json_file_path = os.path.join(config_dir_path, "hpt.json")
     with open(json_file_path, "r", encoding="utf-8") as file:
         hpt_config = json.load(file)
     return hpt_config
@@ -264,10 +257,7 @@ def predictions_df():
 
 @pytest.fixture
 def explainer_config(config_dir_path):
-    json_file_path = os.path.join(
-        config_dir_path,
-        "explainer.json"
-    )
+    json_file_path = os.path.join(config_dir_path, "explainer.json")
     with open(json_file_path, "r", encoding="utf-8") as file:
         config = json.load(file)
     return config
@@ -282,12 +272,6 @@ def explainer_config_file_path(explainer_config, tmpdir):
     return str(config_file_path)
 
 
-# @pytest.fixture
-# def explainer_file_path(tmpdir):
-#     file_path = str(tmpdir.join("explainer.joblib"))
-#     return file_path
-
-
 @pytest.fixture
 def test_resources_dir_path(tmpdir):
     """Define a fixture for the path to the test_resources directory."""
@@ -298,12 +282,12 @@ def test_resources_dir_path(tmpdir):
 
 @pytest.fixture
 def config_file_paths_dict(
-        default_hyperparameters_file_path,
-        explainer_config_file_path,
-        hpt_specs_file_path,
-        model_config_file_path,
-        preprocessing_config_file_path,
-    ):
+    default_hyperparameters_file_path,
+    explainer_config_file_path,
+    hpt_specs_file_path,
+    model_config_file_path,
+    preprocessing_config_file_path,
+):
     """Define a fixture for the paths to all config files."""
     return {
         "default_hyperparameters_file_path": default_hyperparameters_file_path,
@@ -312,6 +296,7 @@ def config_file_paths_dict(
         "model_config_file_path": model_config_file_path,
         "preprocessing_config_file_path": preprocessing_config_file_path,
     }
+
 
 @pytest.fixture
 def resources_paths_dict(test_resources_dir_path, model_config_file_path):
@@ -338,7 +323,136 @@ def resources_paths_dict(test_resources_dir_path, model_config_file_path):
     }
 
 
-# @pytest.fixture
-# def model_resources(resources_paths_dict):
-#     """Define a fixture for the test ModelResources object."""
-#     return get_model_resources(**resources_paths_dict)
+@pytest.fixture
+def sample_request_data(schema_dict):
+    # Define a fixture for test request data
+    sample_dict = {
+        # made up id for this test
+        schema_dict["id"]["name"]: "42",
+    }
+    for feature in schema_dict["features"]:
+        if feature["dataType"] == "NUMERIC":
+            sample_dict[feature["name"]] = feature["example"]
+        elif feature["dataType"] == "CATEGORICAL":
+            sample_dict[feature["name"]] = feature["categories"][0]
+    return {"instances": [{**sample_dict}]}
+
+
+@pytest.fixture
+def sample_response_data(schema_dict):
+    # Define a fixture for expected response
+    return {
+        "status": "success",
+        "message": "",
+        "timestamp": "...varies...",
+        "requestId": "...varies...",
+        "targetClasses": schema_dict["target"]["classes"],
+        "targetDescription": schema_dict["target"]["description"],
+        "predictions": [
+            {
+                "sampleId": "42",
+                # unknown because we don't know the predicted class
+                "predictedClass": "unknown",
+                # predicted probabilities are made up for this test
+                "predictedProbabilities": [0.5, 0.5],
+            }
+        ],
+    }
+
+
+@pytest.fixture
+def sample_explanation_response_data(schema_dict):
+    # Define a fixture for expected response
+    feature_scores = {
+        # made up id for this test
+        schema_dict["id"]["name"]: "42",
+    }
+    for feature in schema_dict["features"]:
+        feature_scores[feature["name"]] = [42, 42]
+    return {
+        "status": "success",
+        "message": "",
+        # made up timestamp
+        "timestamp": "2023-05-22T10:51:45.860800",
+        "requestId": "made_up_id",
+        "targetClasses": schema_dict["target"]["classes"],
+        "targetDescription": schema_dict["target"]["description"],
+        "predictions": [
+            {
+                "sampleId": "42",
+                # unknown because we don't know the predicted class
+                "predictedClass": "unknown",
+                # predicted probabilities are made up for this test
+                "predictedProbabilities": [0.5, 0.5],
+                "explanation": {
+                    # all values are made up
+                    "baseline": [42, 42],
+                    "featureScores": {**feature_scores},
+                },
+            }
+        ],
+        "explanationMethod": ShapClassificationExplainer.EXPLANATION_METHOD,
+    }
+
+
+@pytest.fixture
+def app(
+    input_schema_dir,
+    train_dir,
+    config_file_paths_dict: dict,
+    resources_paths_dict: dict,
+):
+    """
+    Define a fixture for the test app.
+
+    Args:
+        input_schema_dir (str): Directory path to the input data schema.
+        train_dir (str): Directory path to the training data.
+        config_file_paths_dict (dict): Dictionary containing the paths to the
+            configuration files.
+        resources_paths_dict (dict): Dictionary containing the paths to the
+            resources files such as trained models, encoders, and explainers.
+    """
+    # extract paths to all config files
+    model_config_file_path = config_file_paths_dict["model_config_file_path"]
+    preprocessing_config_file_path = config_file_paths_dict[
+        "preprocessing_config_file_path"
+    ]
+    default_hyperparameters_file_path = config_file_paths_dict[
+        "default_hyperparameters_file_path"
+    ]
+    hpt_specs_file_path = config_file_paths_dict["hpt_specs_file_path"]
+    explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
+
+    # Create temporary paths for all outputs/artifacts
+    saved_schema_path = resources_paths_dict["saved_schema_path"]
+    pipeline_file_path = resources_paths_dict["pipeline_file_path"]
+    target_encoder_file_path = resources_paths_dict["target_encoder_file_path"]
+    predictor_file_path = resources_paths_dict["predictor_file_path"]
+    hpt_results_file_path = resources_paths_dict["hpt_results_file_path"]
+    explainer_file_path = resources_paths_dict["explainer_file_path"]
+
+    # Run the training process without hyperparameter tuning
+    run_tuning = False
+    run_training(
+        input_schema_dir=input_schema_dir,
+        saved_schema_path=saved_schema_path,
+        model_config_file_path=model_config_file_path,
+        train_dir=train_dir,
+        preprocessing_config_file_path=preprocessing_config_file_path,
+        pipeline_file_path=pipeline_file_path,
+        target_encoder_file_path=target_encoder_file_path,
+        predictor_file_path=predictor_file_path,
+        default_hyperparameters_file_path=default_hyperparameters_file_path,
+        run_tuning=run_tuning,
+        hpt_specs_file_path=hpt_specs_file_path if run_tuning else None,
+        hpt_results_file_path=hpt_results_file_path if run_tuning else None,
+        explainer_config_file_path=explainer_config_file_path,
+        explainer_file_path=explainer_file_path,
+    )
+
+    # create model resources dictionary
+    model_resources = get_model_resources(**resources_paths_dict)
+
+    # create test app
+    return TestClient(create_app(model_resources))

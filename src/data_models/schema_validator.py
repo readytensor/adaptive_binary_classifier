@@ -1,6 +1,6 @@
 from collections import Counter
 from enum import Enum
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from pydantic import BaseModel, ValidationError, validator
 
@@ -60,7 +60,7 @@ class Feature(BaseModel):
     description: str
     dataType: DataType
     nullable: bool
-    example: Optional[Union[float, str]]
+    example: Optional[float]
     categories: Optional[List[str]]
 
     @validator("example", always=True, allow_reuse=True)

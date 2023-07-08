@@ -8,9 +8,6 @@ import pytest
 import requests
 from docker.errors import ContainerError
 
-
-from src.train import run_training
-
 client = docker.from_env()
 
 
@@ -41,14 +38,14 @@ def move_files_to_temp_dir(src_dir: str, dst_dir: str, file_list: List[str]) -> 
 
 @pytest.fixture
 def mounted_volume(
-        tmpdir: str,
-        train_dir: str,
-        train_data_file_name: str,
-        test_dir: str,
-        test_data_file_name: str,
-        input_schema_dir: str,
-        input_schema_file_name: str,
-    ) -> str:
+    tmpdir: str,
+    train_dir: str,
+    train_data_file_name: str,
+    test_dir: str,
+    test_data_file_name: str,
+    input_schema_dir: str,
+    input_schema_file_name: str,
+) -> str:
     """
     Prepares and returns a directory with a specific structure and files for the
     training / inference tasks.
@@ -81,9 +78,7 @@ def mounted_volume(
     move_files_to_temp_dir(
         input_schema_dir, str(mounted_schema_dir), [input_schema_file_name]
     )
-    move_files_to_temp_dir(
-        train_dir, str(mounted_training_dir), [train_data_file_name]
-    )
+    move_files_to_temp_dir(train_dir, str(mounted_training_dir), [train_data_file_name])
     move_files_to_temp_dir(test_dir, str(mounted_testing_dir), [test_data_file_name])
 
     return str(base_dir)
@@ -173,9 +168,7 @@ def container_name():
 
 
 @pytest.mark.slow
-def test_training_task(
-    mounted_volume: str, docker_image: str, container_name: str
-):
+def test_training_task(mounted_volume: str, docker_image: str, container_name: str):
     """
     Integration test for the training task.
 
@@ -187,9 +180,7 @@ def test_training_task(
     Raises:
         exc: If the Docker container exits with an error.
     """
-    volumes = {
-        mounted_volume: {"bind": "/opt/model_inputs_outputs", "mode": "rw"}
-    }
+    volumes = {mounted_volume: {"bind": "/opt/model_inputs_outputs", "mode": "rw"}}
     try:
         _ = client.containers.run(
             docker_image,
@@ -208,9 +199,7 @@ def test_training_task(
 
 
 @pytest.mark.slow
-def test_prediction_task(
-    mounted_volume: str, docker_image: str, container_name: str
-):
+def test_prediction_task(mounted_volume: str, docker_image: str, container_name: str):
     """
     Integration test for the prediction task.
 

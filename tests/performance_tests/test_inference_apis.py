@@ -2,9 +2,7 @@ import os
 from time import perf_counter
 
 import pytest
-from fastapi.testclient import TestClient
 
-from serve import create_app
 from tests.performance_tests.performance_test_helpers import (
     delete_file_if_exists,
     store_results_to_csv,
@@ -12,35 +10,6 @@ from tests.performance_tests.performance_test_helpers import (
 
 # This global variable will be True if no tests have been run yet, and False otherwise
 FIRST_TEST = True
-
-
-@pytest.fixture
-def app(model_resources):
-    """Define a fixture for the test app."""
-    return TestClient(create_app(model_resources))
-
-
-@pytest.fixture
-def sample_request_data():
-    # Define a fixture for test data
-    return {
-        "instances": [
-            {
-                "PassengerId": "879",
-                "Pclass": 3,
-                "Name": "Laleff, Mr. Kristo",
-                "Sex": "male",
-                "Age": None,
-                "SibSp": 0,
-                "Parch": 0,
-                "Ticket": "349217",
-                "Fare": 7.8958,
-                "Cabin": None,
-                "Embarked": "S",
-            }
-        ]
-    }
-
 
 ENDPOINTS = ["/infer", "/explain"]
 

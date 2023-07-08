@@ -6,93 +6,71 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.serve import create_app
+from src.serve_utils import get_model_resources
+from src.train import run_training
 
 
 @pytest.fixture
-def app(model_resources):
-    """Define a fixture for the test app."""
+def app(
+    input_schema_dir,
+    train_dir,
+    config_file_paths_dict: dict,
+    resources_paths_dict: dict,
+):
+    """
+    Define a fixture for the test app.
+
+    Args:
+        input_schema_dir (str): Directory path to the input data schema.
+        train_dir (str): Directory path to the training data.
+        config_file_paths_dict (dict): Dictionary containing the paths to the
+            configuration files.
+        resources_paths_dict (dict): Dictionary containing the paths to the
+            resources files such as trained models, encoders, and explainers.
+    """
+    # extract paths to all config files
+    model_config_file_path = config_file_paths_dict["model_config_file_path"]
+    preprocessing_config_file_path = config_file_paths_dict[
+        "preprocessing_config_file_path"
+    ]
+    default_hyperparameters_file_path = config_file_paths_dict[
+        "default_hyperparameters_file_path"
+    ]
+    hpt_specs_file_path = config_file_paths_dict["hpt_specs_file_path"]
+    explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
+
+    # Create temporary paths for all outputs/artifacts
+    saved_schema_path = resources_paths_dict["saved_schema_path"]
+    pipeline_file_path = resources_paths_dict["pipeline_file_path"]
+    target_encoder_file_path = resources_paths_dict["target_encoder_file_path"]
+    predictor_file_path = resources_paths_dict["predictor_file_path"]
+    hpt_results_file_path = resources_paths_dict["hpt_results_file_path"]
+    explainer_file_path = resources_paths_dict["explainer_file_path"]
+
+    # Run the training process without hyperparameter tuning
+    run_tuning = False
+    run_training(
+        input_schema_dir=input_schema_dir,
+        saved_schema_path=saved_schema_path,
+        model_config_file_path=model_config_file_path,
+        train_dir=train_dir,
+        preprocessing_config_file_path=preprocessing_config_file_path,
+        pipeline_file_path=pipeline_file_path,
+        target_encoder_file_path=target_encoder_file_path,
+        predictor_file_path=predictor_file_path,
+        default_hyperparameters_file_path=default_hyperparameters_file_path,
+        run_tuning=run_tuning,
+        hpt_specs_file_path=hpt_specs_file_path if run_tuning else None,
+        hpt_results_file_path=hpt_results_file_path if run_tuning else None,
+        explainer_config_file_path=explainer_config_file_path,
+        explainer_file_path=explainer_file_path,
+    )
+
+    # create model resources dictionary
+    model_resources = get_model_resources(**resources_paths_dict)
+
+    # create test app
     return TestClient(create_app(model_resources))
-
-
-@pytest.fixture
-def sample_request_data():
-    # Define a fixture for test data
-    return {
-        "instances": [
-            {
-                "PassengerId": "879",
-                "Pclass": 3,
-                "Name": "Laleff, Mr. Kristo",
-                "Sex": "male",
-                "Age": None,
-                "SibSp": 0,
-                "Parch": 0,
-                "Ticket": "349217",
-                "Fare": 7.8958,
-                "Cabin": None,
-                "Embarked": "S",
-            }
-        ]
-    }
-
-
-@pytest.fixture
-def sample_response_data():
-    # Define a fixture for expected response
-    return {
-        "status": "success",
-        "message": "",
-        "timestamp": "...varies...",
-        "requestId": "...varies...",
-        "targetClasses": ["0", "1"],
-        "targetDescription": "A binary variable indicating whether or not the \
-            passenger survived (0 = No, 1 = Yes).",
-        "predictions": [
-            {
-                "sampleId": "879",
-                "predictedClass": "0",
-                "predictedProbabilities": [0.97548, 0.02452],
-            }
-        ],
-    }
-
-
-@pytest.fixture
-def sample_explanation_response_data():
-    # Define a fixture for expected response
-    return {
-        "status": "success",
-        "message": "",
-        "timestamp": "2023-05-22T10:51:45.860800",
-        "requestId": "0ed3d0b76d",
-        "targetClasses": ["0", "1"],
-        "targetDescription": "A binary variable indicating whether or not the \
-            passenger survived (0 = No, 1 = Yes).",
-        "predictions": [
-            {
-                "sampleId": "879",
-                "predictedClass": "0",
-                "predictedProbabilities": [0.92107, 0.07893],
-                "explanation": {
-                    "baseline": [0.57775, 0.42225],
-                    "featureScores": {
-                        "Age_na": [0.05389, -0.05389],
-                        "Age": [0.02582, -0.02582],
-                        "SibSp": [-0.00469, 0.00469],
-                        "Parch": [0.00706, -0.00706],
-                        "Fare": [0.05561, -0.05561],
-                        "Embarked_S": [0.01582, -0.01582],
-                        "Embarked_C": [0.00393, -0.00393],
-                        "Embarked_Q": [0.00657, -0.00657],
-                        "Pclass_3": [0.0179, -0.0179],
-                        "Pclass_1": [0.02394, -0.02394],
-                        "Sex_male": [0.13747, -0.13747],
-                    },
-                },
-            }
-        ],
-        "explanationMethod": "Shap",
-    }
 
 
 def test_ping(app):
