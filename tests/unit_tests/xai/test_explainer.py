@@ -86,18 +86,22 @@ def test_save_and_load_explainer(
 
 def test_fit_and_save_explainer(
     transformed_train_inputs: DataFrame,
-    explainer_config_file_path: str,
-    explainer_file_path: str,
+    config_file_paths_dict: dict,
+    resources_paths_dict: dict,
 ) -> None:
     """
     Test fitting and saving of the explainer.
 
     Args:
         transformed_train_inputs (DataFrame): Transformed train inputs.
-        explainer_config_file_path (str): Path to the explainer configuration file.
-        explainer_file_path (str): Path where the explainer is to be saved.
+        config_file_paths_dict (dict): Dictionary containing the paths to the
+            configuration files.
+        resources_paths_dict (dict): Dictionary containing the paths to the
+            resources files such as trained models, encoders, and explainers.
 
     """
+    explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
+    explainer_file_path = resources_paths_dict["explainer_file_path"]
     explainer = fit_and_save_explainer(
         transformed_train_inputs, explainer_config_file_path, explainer_file_path
     )
@@ -108,18 +112,22 @@ def test_fit_and_save_explainer(
 
 def test_load_explainer(
     transformed_train_inputs: DataFrame,
-    explainer_config_file_path: str,
-    explainer_file_path: str,
+    config_file_paths_dict: dict,
+    resources_paths_dict: dict,
 ) -> None:
     """
     Test loading of the explainer.
 
     Args:
         transformed_train_inputs (DataFrame): Transformed train inputs.
-        explainer_config_file_path (str): Path to the explainer configuration file.
-        explainer_file_path (str): Path where the explainer is to be saved.
+        config_file_paths_dict (dict): Dictionary containing the paths to the
+            configuration files.
+        resources_paths_dict (dict): Dictionary containing the paths to the
+            resources files such as trained models, encoders, and explainers.
 
     """
+    explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
+    explainer_file_path = resources_paths_dict["explainer_file_path"]
     _ = fit_and_save_explainer(
         transformed_train_inputs, explainer_config_file_path, explainer_file_path
     )
@@ -131,8 +139,8 @@ def test_load_explainer(
 @pytest.mark.slow
 def test_get_explanations_from_explainer(
     transformed_test_inputs: DataFrame,
-    explainer_config_file_path: str,
-    explainer_file_path: str,
+    config_file_paths_dict: dict,
+    resources_paths_dict: dict,
     predictor: Any,
     class_names: List[str],
 ) -> None:
@@ -141,12 +149,16 @@ def test_get_explanations_from_explainer(
 
     Args:
         transformed_test_inputs (DataFrame): Transformed test inputs.
-        explainer_config_file_path (str): Path to the explainer configuration file.
-        explainer_file_path (str): Path where the explainer is to be saved.
+        config_file_paths_dict (dict): Dictionary containing the paths to the
+            configuration files.
+        resources_paths_dict (dict): Dictionary containing the paths to the
+            resources files such as trained models, encoders, and explainers.
         predictor (Any): A predictor model object.
         class_names (List[str]): List of class names.
 
     """
+    explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
+    explainer_file_path = resources_paths_dict["explainer_file_path"]
     explainer = fit_and_save_explainer(
         transformed_test_inputs, explainer_config_file_path, explainer_file_path
     )
@@ -166,8 +178,8 @@ def test_get_explanations_from_explainer(
 @pytest.mark.slow
 def test_explanations_from_loaded_explainer(
     transformed_train_inputs: DataFrame,
-    explainer_config_file_path: str,
-    explainer_file_path: str,
+    config_file_paths_dict: dict,
+    resources_paths_dict: dict,
     predictor: Any,
     transformed_test_inputs: DataFrame,
     class_names: List[str],
@@ -184,6 +196,8 @@ def test_explanations_from_loaded_explainer(
         class_names (List[str]): List of class names.
 
     """
+    explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
+    explainer_file_path = resources_paths_dict["explainer_file_path"]
     fit_and_save_explainer(
         transformed_train_inputs, explainer_config_file_path, explainer_file_path
     )
