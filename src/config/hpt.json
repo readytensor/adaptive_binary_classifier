@@ -1,5 +1,5 @@
 {
-  "num_trials": 50,
+  "num_trials": 20,
   "hyperparameters": [
     {
       "name": "n_estimators",
