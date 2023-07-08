@@ -67,45 +67,40 @@ def schema_provider(schema_dict):
 
 
 @pytest.fixture
-def model_config():
-    """Fixture to create a sample model_config json"""
-    config = {
-        "seed_value": 0,
-        "validation_split": 0.1,
-        "prediction_field_name": "prediction",
-    }
-    return config
+def config_dir_path():
+    """Fixture to create a sample config_dir_path"""
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+    config_dir_path = os.path.join(
+        cur_dir,
+        "..",
+        "src",
+        "config"
+    )
+    return config_dir_path
 
 
 @pytest.fixture
-def preprocessing_config():
+def model_config(config_dir_path):
+    """Fixture to create a sample model_config json"""
+    model_config_file = os.path.join(
+        config_dir_path,
+        "model_config.json"
+    )
+    with open(model_config_file, "r", encoding="utf-8") as file:
+        model_config = json.load(file)
+    return model_config
+
+
+@pytest.fixture
+def preprocessing_config(config_dir_path):
     """Fixture to create a preprocessing config"""
-    config = {
-        "numeric_transformers": {
-            "missing_indicator": {},
-            "mean_median_imputer": {"imputation_method": "mean"},
-            "standard_scaler": {},
-            "outlier_clipper": {"min_val": -4.0, "max_val": 4.0},
-        },
-        "categorical_transformers": {
-            "cat_most_frequent_imputer": {"threshold": 0.1},
-            "missing_tag_imputer": {
-                "imputation_method": "missing",
-                "fill_value": "missing",
-            },
-            "rare_label_encoder": {
-                "tol": 0.03,
-                "n_categories": 1,
-                "replace_with": "__rare__",
-            },
-            "one_hot_encoder": {"handle_unknown": "ignore"},
-        },
-        "feature_selection_preprocessing": {
-            "constant_feature_dropper": {"tol": 1, "missing_values": "include"},
-            "correlated_feature_dropper": {"threshold": 0.95},
-        },
-    }
-    return config
+    preprocessing_config_file = os.path.join(
+        config_dir_path,
+        "preprocessing.json"
+    )
+    with open(preprocessing_config_file, "r", encoding="utf-8") as file:
+        pp_config = json.load(file)
+    return pp_config
 
 
 @pytest.fixture
@@ -150,30 +145,42 @@ def sample_test_data(sample_data):
     N_test = int(len(sample_data) * 0.2)
     return sample_data.tail(N_test)
 
+@pytest.fixture
+def train_data_file_name():
+    return "train.csv"
 
 @pytest.fixture
-def train_dir(sample_train_data, tmpdir):
+def train_dir(sample_train_data, tmpdir, train_data_file_name):
     """Fixture to create and save a sample DataFrame for testing"""
     train_data_dir = tmpdir.mkdir("train")
-    train_data_file_path = train_data_dir.join("train.csv")
+    train_data_file_path = train_data_dir.join(train_data_file_name)
     sample_train_data.to_csv(train_data_file_path, index=False)
     return str(train_data_dir)
 
 
 @pytest.fixture
-def test_dir(sample_test_data, tmpdir):
+def test_data_file_name():
+    return "test.csv"
+
+@pytest.fixture
+def test_dir(sample_test_data, tmpdir, test_data_file_name):
     """Fixture to create and save a sample DataFrame for testing"""
     test_data_dir = tmpdir.mkdir("test")
-    test_data_file_path = test_data_dir.join("test.csv")
+    test_data_file_path = test_data_dir.join(test_data_file_name)
     sample_test_data.to_csv(test_data_file_path, index=False)
     return str(test_data_dir)
 
 
 @pytest.fixture
-def input_schema_dir(schema_dict, tmpdir):
+def input_schema_file_name():
+    return "schema.json"
+
+
+@pytest.fixture
+def input_schema_dir(schema_dict, tmpdir, input_schema_file_name):
     """Fixture to create and save a sample schema for testing"""
     schema_dir = tmpdir.mkdir("input_schema")
-    schema_file_path = schema_dir.join("schema.json")
+    schema_file_path = schema_dir.join(input_schema_file_name)
     with open(schema_file_path, "w") as file:
         json.dump(schema_dict, file)
     return str(schema_dir)
@@ -189,13 +196,12 @@ def model_config_file_path(model_config, tmpdir):
 
 
 @pytest.fixture
-def default_hyperparameters():
+def default_hyperparameters(config_dir_path):
     """Fixture to load and return default hyperparameters"""
-    cur_dir = os.path.dirname(os.path.abspath(__file__))
-    json_file_path = os.path.join(
-        cur_dir, "test_resources", "default_hyperparameters.json"
+    default_hps_file_path = os.path.join(
+        config_dir_path, "default_hyperparameters.json"
     )
-    with open(json_file_path, "r", encoding="utf-8") as file:
+    with open(default_hps_file_path, "r", encoding="utf-8") as file:
         default_hps = json.load(file)
     return default_hps
 
@@ -210,10 +216,12 @@ def default_hyperparameters_file_path(default_hyperparameters, tmpdir):
 
 
 @pytest.fixture
-def hpt_specs():
+def hpt_specs(config_dir_path):
     """Fixture to load and return hyperparameter tuning config"""
-    cur_dir = os.path.dirname(os.path.abspath(__file__))
-    json_file_path = os.path.join(cur_dir, "test_resources", "hpt.json")
+    json_file_path = os.path.join(
+        config_dir_path,
+        "hpt.json"
+    )
     with open(json_file_path, "r", encoding="utf-8") as file:
         hpt_config = json.load(file)
     return hpt_config
@@ -255,8 +263,13 @@ def predictions_df():
 
 
 @pytest.fixture
-def explainer_config():
-    config = {"max_local_explanations": 3, "max_saved_train_data_length": 1000}
+def explainer_config(config_dir_path):
+    json_file_path = os.path.join(
+        config_dir_path,
+        "explainer.json"
+    )
+    with open(json_file_path, "r", encoding="utf-8") as file:
+        config = json.load(file)
     return config
 
 
@@ -264,43 +277,68 @@ def explainer_config():
 def explainer_config_file_path(explainer_config, tmpdir):
     """Fixture to create and save a sample explainer_config json"""
     config_file_path = tmpdir.join("explainer.json")
-    with open(config_file_path, "w") as file:
+    with open(config_file_path, "w", encoding="utf-8") as file:
         json.dump(explainer_config, file)
     return str(config_file_path)
 
 
-@pytest.fixture
-def explainer_file_path(tmpdir):
-    file_path = str(tmpdir.join("explainer.joblib"))
-    return file_path
+# @pytest.fixture
+# def explainer_file_path(tmpdir):
+#     file_path = str(tmpdir.join("explainer.joblib"))
+#     return file_path
 
 
 @pytest.fixture
-def test_resources_path():
+def test_resources_dir_path(tmpdir):
     """Define a fixture for the path to the test_resources directory."""
-    cur_dir = os.path.dirname(os.path.abspath(__file__))
-    test_resources_path = os.path.join(cur_dir, "test_resources")
+    tmpdir.mkdir("test_resources")
+    test_resources_path = os.path.join(tmpdir, "test_resources")
     return test_resources_path
 
 
 @pytest.fixture
-def resources_paths_dict(test_resources_path):
+def config_file_paths_dict(
+        default_hyperparameters_file_path,
+        explainer_config_file_path,
+        hpt_specs_file_path,
+        model_config_file_path,
+        preprocessing_config_file_path,
+    ):
+    """Define a fixture for the paths to all config files."""
+    return {
+        "default_hyperparameters_file_path": default_hyperparameters_file_path,
+        "explainer_config_file_path": explainer_config_file_path,
+        "hpt_specs_file_path": hpt_specs_file_path,
+        "model_config_file_path": model_config_file_path,
+        "preprocessing_config_file_path": preprocessing_config_file_path,
+    }
+
+@pytest.fixture
+def resources_paths_dict(test_resources_dir_path, model_config_file_path):
     """Define a fixture for the paths to the test model resources."""
     return {
-        "saved_schema_path": os.path.join(test_resources_path, "schema.joblib"),
-        "predictor_file_path": os.path.join(test_resources_path, "predictor.joblib"),
-        "pipeline_file_path": os.path.join(test_resources_path, "pipeline.joblib"),
+        "saved_schema_path": os.path.join(test_resources_dir_path, "schema.joblib"),
+        "predictor_file_path": os.path.join(
+            test_resources_dir_path, "predictor.joblib"
+        ),
+        "pipeline_file_path": os.path.join(test_resources_dir_path, "pipeline.joblib"),
         "target_encoder_file_path": os.path.join(
-            test_resources_path, "target_encoder.joblib"
+            test_resources_dir_path, "target_encoder.joblib"
         ),
-        "model_config_file_path": os.path.join(
-            test_resources_path, "model_config.json"
+        "model_config_file_path": model_config_file_path,
+        "explainer_file_path": os.path.join(
+            test_resources_dir_path, "explainer.joblib"
         ),
-        "explainer_file_path": os.path.join(test_resources_path, "explainer.joblib"),
+        "hpt_results_file_path": os.path.join(
+            test_resources_dir_path, "hpt_results.csv"
+        ),
+        "predictions_file_path": os.path.join(
+            test_resources_dir_path, "predictions.csv"
+        ),
     }
 
 
-@pytest.fixture
-def model_resources(resources_paths_dict):
-    """Define a fixture for the test ModelResources object."""
-    return get_model_resources(**resources_paths_dict)
+# @pytest.fixture
+# def model_resources(resources_paths_dict):
+#     """Define a fixture for the test ModelResources object."""
+#     return get_model_resources(**resources_paths_dict)
