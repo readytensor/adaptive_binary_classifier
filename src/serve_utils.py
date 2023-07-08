@@ -45,6 +45,7 @@ def get_model_resources(
     target_encoder_file_path: str = paths.TARGET_ENCODER_FILE_PATH,
     predictor_file_path: str = paths.PREDICTOR_FILE_PATH,
     explainer_file_path: str = paths.EXPLAINER_FILE_PATH,
+    **kwargs,
 ) -> ModelResources:
     """
     Returns an instance of ModelResources.
