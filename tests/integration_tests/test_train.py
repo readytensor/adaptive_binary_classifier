@@ -1,7 +1,6 @@
 import os
 
 import pytest
-from py._path.local import LocalPath
 
 from src.train import run_training
 
@@ -10,14 +9,10 @@ from src.train import run_training
 @pytest.mark.parametrize("run_tuning", [False, True])
 def test_run_training(
     run_tuning: bool,
-    tmpdir: LocalPath,
     input_schema_dir: str,
-    model_config_file_path: str,
     train_dir: str,
-    preprocessing_config_file_path: str,
-    default_hyperparameters_file_path: str,
-    hpt_specs_file_path: str,
-    explainer_config_file_path: str,
+    config_file_paths_dict: dict,
+    resources_paths_dict: dict,
 ) -> None:
     """Test the run_training function to make sure it produces the required artifacts.
 
@@ -30,25 +25,30 @@ def test_run_training(
     Args:
         run_tuning (bool): Boolean indicating whether to run hyperparameter
             tuning or not.
-        tmpdir (LocalPath): Temporary directory path provided by the pytest fixture.
         input_schema_dir (str): Path to the input schema directory.
         model_config_file_path (str): Path to the model configuration file.
         train_dir (str): Path to the training directory.
-        preprocessing_config_file_path (str): Path to the pipeline configuration file.
-        default_hyperparameters_file_path (str): Path to the default
-            hyperparameters file.
-        hpt_specs_file_path (str): Path to the hyperparameter tuning
-            specifications file.
-        explainer_config_file_path (str): Path to the explainer configuration
-            file.
+        config_file_paths_dict (dict): Dictionary containing the paths to the
+            configuration files.
+        resources_paths_dict (dict): Dictionary containing the paths to the
+            resources files such as trained models, encoders, and explainers.
     """
-    # Create temporary paths
-    saved_schema_path = str(tmpdir.join("saved_schema.json"))
-    pipeline_file_path = str(tmpdir.join("pipeline.joblib"))
-    target_encoder_file_path = str(tmpdir.join("target_encoder.joblib"))
-    predictor_file_path = str(tmpdir.join("predictor.joblib"))
-    hpt_results_file_path = str(tmpdir.join("hpt_results.csv"))
-    explainer_file_path = str(tmpdir.join("explainer.joblib"))
+    # extract paths to all config files
+    model_config_file_path = config_file_paths_dict["model_config_file_path"]
+    preprocessing_config_file_path = \
+        config_file_paths_dict["preprocessing_config_file_path"]
+    default_hyperparameters_file_path = \
+        config_file_paths_dict["default_hyperparameters_file_path"]
+    hpt_specs_file_path = config_file_paths_dict["hpt_specs_file_path"]
+    explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
+
+    # Create temporary paths for all outputs/artifacts
+    saved_schema_path = resources_paths_dict["saved_schema_path"]
+    pipeline_file_path = resources_paths_dict["pipeline_file_path"]
+    target_encoder_file_path = resources_paths_dict["target_encoder_file_path"]
+    predictor_file_path = resources_paths_dict["predictor_file_path"]
+    hpt_results_file_path = resources_paths_dict["hpt_results_file_path"]
+    explainer_file_path = resources_paths_dict["explainer_file_path"]
 
     # Run the training process without tuning
     run_training(

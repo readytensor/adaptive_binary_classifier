@@ -7,15 +7,13 @@ from train import run_training
 
 
 def test_integration_run_batch_predictions_without_hpt(
-    tmpdir,
     input_schema_dir,
-    model_config_file_path,
     train_dir,
-    preprocessing_config_file_path,
+    config_file_paths_dict: dict,
     test_dir,
     sample_test_data,
     schema_provider,
-    default_hyperparameters_file_path,
+    resources_paths_dict: dict,
 ):
     """
     Integration test for the run_batch_predictions function.
@@ -32,27 +30,36 @@ def test_integration_run_batch_predictions_without_hpt(
     avoid affecting the actual file system.
 
     Args:
-        tmpdir (LocalPath): Temporary directory path provided by pytest's
-            tmpdir fixture.
         input_schema_dir (str): Directory path to the input data schema.
-        model_config_file_path (str): Path to the model configuration file.
         train_dir (str): Directory path to the training data.
-        pipeline_config_file_path (str): Directory path to the pipeline config file.
+        config_file_paths_dict (dict): Dictionary containing the paths to the
+            configuration files.
         test_dir (str): Directory path to the test data.
         sample_test_data (pd.DataFrame): Sample DataFrame for testing.
         schema_provider (Any): Loaded schema provider.
-        default_hyperparameters_file_path (str): Path to default hyperparameters.
-        hpt_config_file_path (str): Path to HPT config file.
-        explainer_config_file_path (str): Path to explainer config file.
+        resources_paths_dict (dict): Dictionary containing the paths to the
+            resources files such as trained models, encoders, and explainers.
     """
-    # Create temporary paths for training
-    saved_schema_path = str(tmpdir.join("saved_schema.json"))
-    pipeline_file_path = str(tmpdir.join("pipeline.joblib"))
-    target_encoder_file_path = str(tmpdir.join("target_encoder.joblib"))
-    predictor_file_path = str(tmpdir.join("predictor.joblib"))
-    print("run training")
+    # extract paths to all config files
+    model_config_file_path = config_file_paths_dict["model_config_file_path"]
+    preprocessing_config_file_path = \
+        config_file_paths_dict["preprocessing_config_file_path"]
+    default_hyperparameters_file_path = \
+        config_file_paths_dict["default_hyperparameters_file_path"]
+    hpt_specs_file_path = config_file_paths_dict["hpt_specs_file_path"]
+    explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
+
+    # Create temporary paths for all outputs/artifacts
+    saved_schema_path = resources_paths_dict["saved_schema_path"]
+    pipeline_file_path = resources_paths_dict["pipeline_file_path"]
+    target_encoder_file_path = resources_paths_dict["target_encoder_file_path"]
+    predictor_file_path = resources_paths_dict["predictor_file_path"]
+    hpt_results_file_path = resources_paths_dict["hpt_results_file_path"]
+    explainer_file_path = resources_paths_dict["explainer_file_path"]
+
 
     # Run the training process without hyperparameter tuning
+    run_tuning = False
     run_training(
         input_schema_dir=input_schema_dir,
         saved_schema_path=saved_schema_path,
@@ -63,11 +70,15 @@ def test_integration_run_batch_predictions_without_hpt(
         target_encoder_file_path=target_encoder_file_path,
         predictor_file_path=predictor_file_path,
         default_hyperparameters_file_path=default_hyperparameters_file_path,
+        run_tuning=run_tuning,
+        hpt_specs_file_path=hpt_specs_file_path if run_tuning else None,
+        hpt_results_file_path=hpt_results_file_path if run_tuning else None,
+        explainer_config_file_path=explainer_config_file_path,
+        explainer_file_path=explainer_file_path,
     )
-    print("ran training")
 
-    # Create temporary paths for prediction
-    predictions_file_path = str(tmpdir.join("predictions.csv"))
+    # Get temporary path for prediction
+    predictions_file_path = resources_paths_dict["predictions_file_path"]
 
     # Run the prediction process
     run_batch_predictions(

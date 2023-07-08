@@ -8,6 +8,9 @@ import pytest
 import requests
 from docker.errors import ContainerError
 
+
+from src.train import run_training
+
 client = docker.from_env()
 
 
@@ -37,15 +40,27 @@ def move_files_to_temp_dir(src_dir: str, dst_dir: str, file_list: List[str]) -> 
 
 
 @pytest.fixture
-def mounted_volume_for_training(tmpdir: str, test_resources_path: str) -> str:
+def mounted_volume(
+        tmpdir: str,
+        train_dir: str,
+        train_data_file_name: str,
+        test_dir: str,
+        test_data_file_name: str,
+        input_schema_dir: str,
+        input_schema_file_name: str,
+    ) -> str:
     """
     Prepares and returns a directory with a specific structure and files for the
-    training task.
+    training / inference tasks.
 
     Args:
         tmpdir (str): Pytest fixture for creating temporary directories.
-        test_resources_path (str): Path to the test resources directory.
-
+        train_dir (str): Path to the training data directory.
+        train_data_file_name (str): Name of the training data file.
+        test_dir (str): Path to the testing data directory.
+        test_data_file_name (str): Name of the testing data file.
+        input_schema_dir (str): Path to the schema directory.
+        input_schema_file_name (str): Name of the schema file.
     Returns:
         str: Path to the prepared directory.
     """
@@ -53,9 +68,9 @@ def mounted_volume_for_training(tmpdir: str, test_resources_path: str) -> str:
     # Create the necessary directories
     input_dir = base_dir.mkdir("inputs")
     input_data_dir = input_dir.mkdir("data")
-    training_dir = input_data_dir.mkdir("training")
-    testing_dir = input_data_dir.mkdir("testing")
-    schema_dir = input_dir.mkdir("schema")
+    mounted_training_dir = input_data_dir.mkdir("training")
+    mounted_testing_dir = input_data_dir.mkdir("testing")
+    mounted_schema_dir = input_dir.mkdir("schema")
     base_dir.mkdir("model").mkdir("artifacts")
     output_dir = base_dir.mkdir("outputs")
     output_dir.mkdir("errors")
@@ -64,66 +79,65 @@ def mounted_volume_for_training(tmpdir: str, test_resources_path: str) -> str:
 
     # Move the necessary files to the created directories
     move_files_to_temp_dir(
-        test_resources_path, str(training_dir), ["titanic_train.csv"]
+        input_schema_dir, str(mounted_schema_dir), [input_schema_file_name]
     )
-    move_files_to_temp_dir(test_resources_path, str(testing_dir), ["titanic_test.csv"])
     move_files_to_temp_dir(
-        test_resources_path, str(schema_dir), ["titanic_schema.json"]
+        train_dir, str(mounted_training_dir), [train_data_file_name]
     )
+    move_files_to_temp_dir(test_dir, str(mounted_testing_dir), [test_data_file_name])
 
     return str(base_dir)
 
 
-@pytest.fixture
-def mounted_volume_for_inference(tmpdir: str, test_resources_path: str) -> str:
-    """
-    Prepares and returns a directory with a specific structure and files
-    for the inference task.
+# @pytest.fixture
+# def mounted_volume_for_inference(
+#         tmpdir: str,
+#         train_dir: str,
+#         train_data_file_name: str,
+#         test_dir: str,
+#         test_data_file_name: str,
+#         input_schema_dir: str,
+#         input_schema_file_name: str,
+#     ) -> str:
+#     """
+#     Prepares and returns a directory with a specific structure and files
+#     for the inference task.
 
-    Args:
-        tmpdir (str): Pytest fixture for creating temporary directories.
-        test_resources_path (str): Path to the test resources directory.
+#     Args:
+#         tmpdir (str): Pytest fixture for creating temporary directories.
+#         train_dir (str): Path to the training data directory.
+#         train_data_file_name (str): Name of the training data file.
+#         test_dir (str): Path to the testing data directory.
+#         test_data_file_name (str): Name of the testing data file.
+#         input_schema_dir (str): Path to the schema directory.
+#         input_schema_file_name (str): Name of the schema file.
 
-    Returns:
-        str: Path to the prepared directory.
-    """
-    base_dir = tmpdir.mkdir("model_inputs_outputs")
-    # Create the necessary directories
-    inputs_dir = base_dir.mkdir("inputs")
-    inputs_dir.mkdir("data").mkdir("testing")
-    inputs_dir.mkdir("schema")
-    model_dir = base_dir.mkdir("model").mkdir("artifacts")
-    outputs_dir = base_dir.mkdir("outputs")
-    outputs_dir.mkdir("errors")
-    outputs_dir.mkdir("hpt_outputs")
-    outputs_dir.mkdir("predictions")
+#     Returns:
+#         str: Path to the prepared directory.
+#     """
+#     base_dir = tmpdir.mkdir("model_inputs_outputs")
+#     # Create the necessary directories
+#     input_dir = base_dir.mkdir("inputs")
+#     input_data_dir = input_dir.mkdir("data")
+#     mounted_training_dir = input_data_dir.mkdir("training")
+#     mounted_testing_dir = input_data_dir.mkdir("testing")
+#     mounted_schema_dir = input_dir.mkdir("schema")
+#     base_dir.mkdir("model").mkdir("artifacts")
+#     output_dir = base_dir.mkdir("outputs")
+#     output_dir.mkdir("errors")
+#     output_dir.mkdir("hpt_outputs")
+#     output_dir.mkdir("predictions")
 
-    # Move the necessary files to the created directories
-    move_files_to_temp_dir(
-        test_resources_path,
-        str(base_dir.join("inputs/data/testing")),
-        ["titanic_test.csv"],
-    )
-    move_files_to_temp_dir(
-        test_resources_path,
-        str(base_dir.join("inputs/schema")),
-        ["titanic_schema.json"],
-    )
+#     # Move the necessary files to the created directories
+#     move_files_to_temp_dir(
+#         input_schema_dir, str(mounted_schema_dir), [input_schema_file_name]
+#     )
+#     move_files_to_temp_dir(
+#         train_dir, str(mounted_training_dir), [train_data_file_name]
+#     )
+#     move_files_to_temp_dir(test_dir, str(mounted_testing_dir), [test_data_file_name])
 
-    # Move the model artifacts to the created directory
-    move_files_to_temp_dir(
-        test_resources_path,
-        str(model_dir),
-        [
-            "explainer.joblib",
-            "pipeline.joblib",
-            "predictor.joblib",
-            "schema.joblib",
-            "target_encoder.joblib",
-        ],
-    )
-
-    return str(base_dir)
+#     return str(base_dir)
 
 
 @pytest.fixture
@@ -160,13 +174,13 @@ def container_name():
 
 @pytest.mark.slow
 def test_training_task(
-    mounted_volume_for_training: str, docker_image: str, container_name: str
+    mounted_volume: str, docker_image: str, container_name: str
 ):
     """
     Integration test for the training task.
 
     Args:
-        mounted_volume_for_training (str): The path of the training data directory.
+        mounted_volume (str): Mounted data directory.
         docker_image (str): The name of the Docker image.
         container_name (str): The name of the Docker container.
 
@@ -174,7 +188,7 @@ def test_training_task(
         exc: If the Docker container exits with an error.
     """
     volumes = {
-        mounted_volume_for_training: {"bind": "/opt/model_inputs_outputs", "mode": "rw"}
+        mounted_volume: {"bind": "/opt/model_inputs_outputs", "mode": "rw"}
     }
     try:
         _ = client.containers.run(
@@ -189,19 +203,19 @@ def test_training_task(
         print(f"Standard error: {exc.stderr}")
         raise exc  # Re-raise the exception to fail the test case
 
-    model_path = os.path.join(mounted_volume_for_training, "model/artifacts/")
+    model_path = os.path.join(mounted_volume, "model/artifacts/")
     assert os.listdir(model_path)  # Assert that the directory is not empty
 
 
 @pytest.mark.slow
 def test_prediction_task(
-    mounted_volume_for_inference: str, docker_image: str, container_name: str
+    mounted_volume: str, docker_image: str, container_name: str
 ):
     """
     Integration test for the prediction task.
 
     Args:
-        mounted_volume_for_inference (str): The path of the inference data directory.
+        mounted_volume (str): Mounted data directory.
         docker_image (str): The name of the Docker image.
         container_name (str): The name of the Docker container.
 
@@ -209,12 +223,21 @@ def test_prediction_task(
         exc: If the Docker container exits with an error.
     """
     volumes = {
-        mounted_volume_for_inference: {
+        mounted_volume: {
             "bind": "/opt/model_inputs_outputs",
             "mode": "rw",
         }
     }
     try:
+        # training task
+        _ = client.containers.run(
+            docker_image,
+            "train",
+            name=container_name,
+            volumes=volumes,
+            remove=True,
+        )
+        # prediction task
         _ = client.containers.run(
             docker_image,
             "predict",
@@ -227,13 +250,13 @@ def test_prediction_task(
         print(f"Standard error: {exc.stderr}")
         raise exc  # Re-raise the exception to fail the test case
 
-    prediction_path = os.path.join(mounted_volume_for_inference, "outputs/predictions/")
+    prediction_path = os.path.join(mounted_volume, "outputs/predictions/")
     assert os.listdir(prediction_path)  # Assert that the directory is not empty
 
 
 @pytest.mark.slow
 def test_inference_service(
-    mounted_volume_for_inference: str,
+    mounted_volume: str,
     docker_image: str,
     container_name: str,
     sample_request_data: dict,
@@ -244,7 +267,7 @@ def test_inference_service(
     Integration test for the inference service.
 
     Args:
-        mounted_volume_for_inference (str): The path of the inference data directory.
+        mounted_volume (str): Mounted data directory.
         docker_image (str): The name of the Docker image.
         container_name (str): The name of the Docker container.
         sample_request_data (dict): The sample request data for testing the `/infer`
@@ -258,21 +281,31 @@ def test_inference_service(
         exc: If the Docker container exits with an error.
     """
     volumes = {
-        mounted_volume_for_inference: {
+        mounted_volume: {
             "bind": "/opt/model_inputs_outputs",
             "mode": "rw",
         }
     }
 
-    container = client.containers.create(
-        docker_image,
-        command="serve",
-        name=container_name,
-        volumes=volumes,
-        ports={"8080/tcp": 8080},
-    )
-
     try:
+        # training task
+        _ = client.containers.run(
+            docker_image,
+            "train",
+            name=container_name,
+            volumes=volumes,
+            remove=True,
+        )
+
+        # serving task
+        container = client.containers.create(
+            docker_image,
+            command="serve",
+            name=container_name,
+            volumes=volumes,
+            ports={"8080/tcp": 8080},
+        )
+
         container.start()
 
         # Wait for the service to start.
@@ -293,7 +326,7 @@ def test_inference_service(
         print(sample_response_data["targetDescription"])
         assert (
             response_data["predictions"][0]["predictedClass"]
-            == sample_response_data["predictions"][0]["predictedClass"]
+            in sample_response_data["targetClasses"]
         )
 
         # Test `/explain` endpoint
@@ -308,7 +341,7 @@ def test_inference_service(
         )
         assert (
             response_data["predictions"][0]["predictedClass"]
-            == sample_explanation_response_data["predictions"][0]["predictedClass"]
+            in sample_response_data["targetClasses"]
         )
         # explanations
         assert "explanation" in response_data["predictions"][0]
