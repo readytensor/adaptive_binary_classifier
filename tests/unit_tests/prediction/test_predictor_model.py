@@ -17,12 +17,8 @@ from src.prediction.predictor_model import (
 
 # Define the hyperparameters fixture
 @pytest.fixture
-def hyperparameters():
-    return {
-        "n_estimators": 10,
-        "min_samples_split": 4,
-        "min_samples_leaf": 2,
-    }
+def hyperparameters(default_hyperparameters):
+    return default_hyperparameters
 
 
 @pytest.fixture
