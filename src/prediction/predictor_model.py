@@ -15,7 +15,6 @@ class Classifier:
 
     This class provides a consistent interface that can be used with other
     classifier models.
-    The Random Forest binary classifier is encapsulated inside this class.
     """
 
     model_name = "random_forest_binary_classifier"
