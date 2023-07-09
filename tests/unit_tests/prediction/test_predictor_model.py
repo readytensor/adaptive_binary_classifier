@@ -46,7 +46,7 @@ def test_build_model(classifier, hyperparameters):
         assert getattr(model, param) == value
 
 
-def test_build_model_without_hyperparameters():
+def test_build_model_without_hyperparameters(default_hyperparameters):
     """
     Test if the build_model method creates a model with default hyperparameters when
     none are provided.
@@ -57,12 +57,6 @@ def test_build_model_without_hyperparameters():
     assert isinstance(model, default_classifier.model.__class__)
 
     # Check if the model has default hyperparameters
-    default_hyperparameters = {
-        "n_estimators": 100,
-        "min_samples_split": 2,
-        "min_samples_leaf": 1,
-    }
-
     for param, value in default_hyperparameters.items():
         assert getattr(model, param) == value
 
