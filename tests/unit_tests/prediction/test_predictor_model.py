@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.datasets import make_classification
 from sklearn.linear_model import LogisticRegression
@@ -31,34 +32,39 @@ def classifier(hyperparameters):
 def synthetic_data():
     """Define the synthetic dataset fixture"""
     X, y = make_classification(n_samples=100, n_features=5, random_state=42)
+    X = pd.DataFrame(X, columns=[f"feature_{i+1}" for i in range(X.shape[1])])
+    y = pd.Series(y, name="target")
     train_X, train_y = X[:80], y[:80]
     test_X, test_y = X[80:], y[80:]
     return train_X, train_y, test_X, test_y
 
 
-def test_build_model(classifier, hyperparameters):
+def test_build_model(default_hyperparameters):
     """
-    Test if the build_model method creates a model with the specified hyperparameters.
+    Test if the classifier is created with the specified hyperparameters.
     """
-    model = classifier.build_model()
-    assert isinstance(model, classifier.model.__class__)
-    for param, value in hyperparameters.items():
-        assert getattr(model, param) == value
+    modified_hyperparameters = default_hyperparameters.copy()
+    for key, value in modified_hyperparameters.items():
+        value_type = type(value)
+        if value_type == str:
+            modified_hyperparameters[key] = f"{key}_test"
+        elif value_type in [int, float]:
+            modified_hyperparameters[key] = 42
+    new_classifier = Classifier(**modified_hyperparameters)
+    for param, value in modified_hyperparameters.items():
+        assert getattr(new_classifier, param) == value
 
 
 def test_build_model_without_hyperparameters(default_hyperparameters):
     """
-    Test if the build_model method creates a model with default hyperparameters when
+    Test if the classifier is created with default hyperparameters when
     none are provided.
     """
     default_classifier = Classifier()
-    model = default_classifier.build_model()
-
-    assert isinstance(model, default_classifier.model.__class__)
 
     # Check if the model has default hyperparameters
     for param, value in default_hyperparameters.items():
-        assert getattr(model, param) == value
+        assert getattr(default_classifier, param) == value
 
 
 def test_fit_predict_evaluate(classifier, synthetic_data):
@@ -102,7 +108,7 @@ def test_save_load(tmpdir_factory, classifier, synthetic_data, hyperparameters):
 
     # Check the loaded model has the same hyperparameters as the original classifier
     for param, value in hyperparameters.items():
-        assert getattr(loaded_clf.model, param) == value
+        assert getattr(loaded_clf, param) == value
 
     # Test predictions
     predictions = loaded_clf.predict(test_X)
@@ -150,7 +156,7 @@ def test_train_predictor_model(synthetic_data, hyperparameters):
 
     assert isinstance(classifier, Classifier)
     for param, value in hyperparameters.items():
-        assert getattr(classifier.model, param) == value
+        assert getattr(classifier, param) == value
 
 
 def test_predict_with_model(synthetic_data, hyperparameters):
@@ -190,7 +196,7 @@ def test_load_predictor_model(tmpdir_factory, classifier, hyperparameters):
     loaded_clf = load_predictor_model(model_file_path)
     assert isinstance(loaded_clf, Classifier)
     for param, value in hyperparameters.items():
-        assert getattr(loaded_clf.model, param) == value
+        assert getattr(loaded_clf, param) == value
 
 
 def test_evaluate_predictor_model(synthetic_data, hyperparameters):
