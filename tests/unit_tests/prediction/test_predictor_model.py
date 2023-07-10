@@ -95,7 +95,7 @@ def test_save_load(tmpdir_factory, classifier, synthetic_data, hyperparameters):
     tmpdir_str = str(tmpdir_factory.mktemp("data"))
 
     # Specify the file path
-    model_file_path = os.path.join(tmpdir_str, "model.joblib")
+    model_file_path = os.path.join(tmpdir_str, "model.save")
 
     train_X, train_y, test_X, test_y = synthetic_data
     classifier.fit(train_X, train_y)
@@ -178,10 +178,10 @@ def test_save_predictor_model(tmpdir_factory, classifier):
     to disk.
     """
     tmpdir_str = str(tmpdir_factory.mktemp("data"))
-    model_file_path = os.path.join(tmpdir_str, "model.joblib")
+    model_dir_path = os.path.join(tmpdir_str, "model")
 
-    save_predictor_model(classifier, model_file_path)
-    assert os.path.exists(model_file_path)
+    save_predictor_model(classifier, model_dir_path)
+    assert os.path.exists(model_dir_path)
 
 
 def test_load_predictor_model(tmpdir_factory, classifier, hyperparameters):
@@ -190,10 +190,10 @@ def test_load_predictor_model(tmpdir_factory, classifier, hyperparameters):
     instance from disk and that the loaded instance has the correct hyperparameters.
     """
     tmpdir_str = str(tmpdir_factory.mktemp("data"))
-    model_file_path = os.path.join(tmpdir_str, "model.joblib")
-    classifier.save(model_file_path)
+    model_dir_path = os.path.join(tmpdir_str, "model")
+    save_predictor_model(classifier, model_dir_path)
 
-    loaded_clf = load_predictor_model(model_file_path)
+    loaded_clf = load_predictor_model(model_dir_path)
     assert isinstance(loaded_clf, Classifier)
     for param, value in hyperparameters.items():
         assert getattr(loaded_clf, param) == value

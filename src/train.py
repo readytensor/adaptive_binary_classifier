@@ -25,35 +25,33 @@ logger = get_logger(task_name="train")
 
 def run_training(
     input_schema_dir: str = paths.INPUT_SCHEMA_DIR,
-    saved_schema_path: str = paths.SAVED_SCHEMA_PATH,
+    saved_schema_dir_path: str = paths.SAVED_SCHEMA_DIR_PATH,
     model_config_file_path: str = paths.MODEL_CONFIG_FILE_PATH,
     train_dir: str = paths.TRAIN_DIR,
     preprocessing_config_file_path: str = paths.PREPROCESSING_CONFIG_FILE_PATH,
-    pipeline_file_path: str = paths.PIPELINE_FILE_PATH,
-    target_encoder_file_path: str = paths.TARGET_ENCODER_FILE_PATH,
-    predictor_file_path: str = paths.PREDICTOR_FILE_PATH,
+    preprocessing_dir_path: str = paths.PREPROCESSING_DIR_PATH,
+    predictor_dir_path: str = paths.PREDICTOR_DIR_PATH,
     default_hyperparameters_file_path: str = paths.DEFAULT_HYPERPARAMETERS_FILE_PATH,
     run_tuning: bool = False,
     hpt_specs_file_path: str = paths.HPT_CONFIG_FILE_PATH,
-    hpt_results_file_path: str = paths.HPT_RESULTS_FILE_PATH,
+    hpt_results_dir_path: str = paths.HPT_OUTPUTS_DIR,
     explainer_config_file_path: str = paths.EXPLAINER_CONFIG_FILE_PATH,
-    explainer_file_path: str = paths.EXPLAINER_FILE_PATH,
+    explainer_dir_path: str = paths.EXPLAINER_DIR_PATH,
 ) -> None:
     """
     Run the training process and saves model artifacts
 
     Args:
         input_schema_dir (str, optional): The directory path of the input schema.
-        saved_schema_path (str, optional): The path where to save the schema.
+        saved_schema_dir_path (str, optional): The path where to save the schema.
         model_config_file_path (str, optional): The path of the model
             configuration file.
         train_dir (str, optional): The directory path of the train data.
         preprocessing_config_file_path (str, optional): The path of the preprocessing
             configuration file.
-        pipeline_file_path (str, optional): The path where to save the pipeline.
-        target_encoder_file_path (str, optional): The path where to save the
-            target encoder.
-        predictor_file_path (str, optional): The path where to save the
+        preprocessing_dir_path (str, optional): The dir path where to save the pipeline
+            and target encoder.
+        predictor_dir_path (str, optional): Dir path where to save the
             predictor model.
         default_hyperparameters_file_path (str, optional): The path of the default
             hyperparameters file.
@@ -61,10 +59,10 @@ def run_training(
             Default is False.
         hpt_specs_file_path (str, optional): The path of the configuration file for
             hyperparameter tuning.
-        hpt_results_file_path (str, optional): The path where to save the HPT results.
+        hpt_results_dir_path (str, optional): Dir path where to save the HPT results.
         explainer_config_file_path (str, optional): The path of the explainer
             configuration file.
-        explainer_file_path (str, optional): The path where to save the explainer.
+        explainer_dir_path (str, optional): Dir path where to save the explainer.
     Returns:
         None
     """
@@ -75,7 +73,7 @@ def run_training(
         # load and save schema
         logger.info("Loading and saving schema...")
         data_schema = load_json_data_schema(input_schema_dir)
-        save_schema(schema=data_schema, output_path=saved_schema_path)
+        save_schema(schema=data_schema, save_dir_path=saved_schema_dir_path)
 
         # load model config
         logger.info("Loading model config...")
@@ -127,7 +125,7 @@ def run_training(
         )
         logger.info("Saving pipeline and label encoder...")
         save_pipeline_and_target_encoder(
-            pipeline, target_encoder, pipeline_file_path, target_encoder_file_path
+            pipeline, target_encoder, preprocessing_dir_path
         )
 
         # hyperparameter tuning + training the model
@@ -138,7 +136,7 @@ def run_training(
                 train_y=balanced_train_labels,
                 valid_X=transformed_val_inputs,
                 valid_y=transformed_val_labels,
-                hpt_results_file_path=hpt_results_file_path,
+                hpt_results_dir_path=hpt_results_dir_path,
                 is_minimize=False,
                 default_hyperparameters_file_path=default_hyperparameters_file_path,
                 hpt_specs_file_path=hpt_specs_file_path,
@@ -161,7 +159,7 @@ def run_training(
 
         # save predictor model
         logger.info("Saving classifier...")
-        save_predictor_model(predictor, predictor_file_path)
+        save_predictor_model(predictor, predictor_dir_path)
 
         # calculate and print validation accuracy
         logger.info("Calculating accuracy on validaton data...")
@@ -173,7 +171,7 @@ def run_training(
         # fit and save explainer
         logger.info("Fitting and saving explainer...")
         _ = fit_and_save_explainer(
-            transformed_train_inputs, explainer_config_file_path, explainer_file_path
+            transformed_train_inputs, explainer_config_file_path, explainer_dir_path
         )
 
         logger.info("Training completed successfully")

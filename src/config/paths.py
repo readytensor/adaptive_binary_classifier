@@ -26,15 +26,13 @@ MODEL_PATH = os.path.join(MODEL_INPUTS_OUTPUTS, "model")
 # Path to artifacts directory inside model directory
 MODEL_ARTIFACTS_PATH = os.path.join(MODEL_PATH, "artifacts")
 # Path to saved schema in artifacts directory
-SAVED_SCHEMA_PATH = os.path.join(MODEL_ARTIFACTS_PATH, "schema.joblib")
+SAVED_SCHEMA_DIR_PATH = os.path.join(MODEL_ARTIFACTS_PATH, "schema")
 # Name of the preprocessing pipeline file
-PIPELINE_FILE_PATH = os.path.join(MODEL_ARTIFACTS_PATH, "pipeline.joblib")
-# Name of the target encoder file
-TARGET_ENCODER_FILE_PATH = os.path.join(MODEL_ARTIFACTS_PATH, "target_encoder.joblib")
+PREPROCESSING_DIR_PATH = os.path.join(MODEL_ARTIFACTS_PATH, "preprocessing")
 # Name of the predictor model file inside artifacts directory
-PREDICTOR_FILE_PATH = os.path.join(MODEL_ARTIFACTS_PATH, "predictor.joblib")
+PREDICTOR_DIR_PATH = os.path.join(MODEL_ARTIFACTS_PATH, "predictor")
 # Name of the explainer file inside artifacts directory
-EXPLAINER_FILE_PATH = os.path.join(MODEL_ARTIFACTS_PATH, "explainer.joblib")
+EXPLAINER_DIR_PATH = os.path.join(MODEL_ARTIFACTS_PATH, "explainer")
 
 # Path to outputs
 OUTPUT_DIR = os.path.join(MODEL_INPUTS_OUTPUTS, "outputs")
@@ -44,8 +42,6 @@ PREDICTIONS_DIR = os.path.join(OUTPUT_DIR, "predictions")
 PREDICTIONS_FILE_PATH = os.path.join(PREDICTIONS_DIR, "predictions.csv")
 # Path to HPT results directory inside outputs directory
 HPT_OUTPUTS_DIR = os.path.join(OUTPUT_DIR, "hpt_outputs")
-# Name of the hyperparameters results file
-HPT_RESULTS_FILE_PATH = os.path.join(HPT_OUTPUTS_DIR, "HPT_results.csv")
 
 # Path to logs directory inside outputs directory
 ERRORS_DIR = os.path.join(OUTPUT_DIR, "errors")

@@ -1,4 +1,5 @@
 import math
+import os
 from typing import Any, Callable, Dict, List, Union
 
 import numpy as np
@@ -10,6 +11,8 @@ from config import paths
 from logger import get_logger
 from prediction.predictor_model import evaluate_predictor_model, train_predictor_model
 from utils import read_json_as_dict, save_dataframe_as_csv
+
+HPT_RESULTS_FILE_NAME = "HPT_results.csv"
 
 logger = get_logger(task_name="tune")
 
@@ -26,7 +29,7 @@ class SKOHyperparameterTuner:
     Args:
         default_hps (Dict[str, Any]): Dictionary of default hyperparameter values.
         hpt_specs (Dict[str, Any]): Dictionary of hyperparameter tuning specs.
-        hpt_results_file_path (str): Path to the hyperparameter tuning results file.
+        hpt_results_dir_path (str): Dir path to save the hyperparameter tuning results.
         is_minimize (bool, optional): Whether the metric should be minimized.
             Defaults to True.
     """
@@ -35,7 +38,7 @@ class SKOHyperparameterTuner:
         self,
         default_hyperparameters: Dict[str, Any],
         hpt_specs: Dict[str, Any],
-        hpt_results_file_path: str,
+        hpt_results_dir_path: str,
         is_minimize: bool = True,
     ):
         """Initializes an instance of the hyperparameter tuner.
@@ -43,13 +46,13 @@ class SKOHyperparameterTuner:
         Args:
             default_hyperparameters: Dictionary of default hyperparameter values.
             hpt_specs: Dictionary of hyperparameter tuning specs.
-            hpt_results_file_path: Path to the hyperparameter tuning results file.
+            hpt_results_dir_path: Dir path to save the hyperparameter tuning results.
             is_minimize:  Whether the metric should be minimized or maximized.
                 Defaults to True.
         """
         self.default_hyperparameters = default_hyperparameters
         self.hpt_specs = hpt_specs
-        self.hpt_results_file_path = hpt_results_file_path
+        self.hpt_results_dir_path = hpt_results_dir_path
         self.is_minimize = is_minimize
         self.num_trials = hpt_specs.get("num_trials", 20)
         assert self.num_trials >= 2, "Scikit-Optimize minimizer needs at least 2 trials"
@@ -224,7 +227,10 @@ class SKOHyperparameterTuner:
         hpt_results_df.sort_values(by="metric_value", inplace=True, ignore_index=True)
         if self.is_minimize is False:
             hpt_results_df["metric_value"] = -hpt_results_df["metric_value"]
-        save_dataframe_as_csv(hpt_results_df, self.hpt_results_file_path)
+        if not os.path.exists(self.hpt_results_dir_path):
+            os.makedirs(self.hpt_results_dir_path)
+        file_path = os.path.join(self.hpt_results_dir_path, HPT_RESULTS_FILE_NAME)
+        save_dataframe_as_csv(hpt_results_df, file_path)
 
 
 def tune_hyperparameters(
@@ -232,7 +238,7 @@ def tune_hyperparameters(
     train_y: Union[pd.Series, np.ndarray],
     valid_X: Union[pd.DataFrame, np.ndarray],
     valid_y: Union[pd.Series, np.ndarray],
-    hpt_results_file_path: str,
+    hpt_results_dir_path: str,
     is_minimize: bool = True,
     default_hyperparameters_file_path: str = paths.DEFAULT_HYPERPARAMETERS_FILE_PATH,
     hpt_specs_file_path: str = paths.HPT_CONFIG_FILE_PATH,
@@ -249,7 +255,7 @@ def tune_hyperparameters(
         train_y (Union[pd.Series, np.ndarray]): Training data labels.
         valid_X (Union[pd.DataFrame, np.ndarray]): Validation data features.
         valid_y (Union[pd.Series, np.ndarray]): Validation data labels.
-        hpt_results_file_path (str): Path to the hyperparameter tuning results file.
+        hpt_results_dir_path (str): Dir path to the hyperparameter tuning results file.
         is_minimize (bool, optional): Whether the metric should be minimized.
             Defaults to True.
         default_hyperparameters_file_path (str, optional): Path to the json file with
@@ -267,7 +273,7 @@ def tune_hyperparameters(
     hyperparameter_tuner = SKOHyperparameterTuner(
         default_hyperparameters=default_hyperparameters,
         hpt_specs=hpt_specs,
-        hpt_results_file_path=hpt_results_file_path,
+        hpt_results_dir_path=hpt_results_dir_path,
         is_minimize=is_minimize,
     )
     best_hyperparams = hyperparameter_tuner.run_hyperparameter_tuning(

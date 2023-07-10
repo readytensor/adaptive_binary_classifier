@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -8,6 +9,8 @@ from shap import Explainer
 
 from prediction.predictor_model import predict_with_model
 from utils import read_json_as_dict
+
+EXPLAINER_FILE_NAME = "explainer.joblib"
 
 
 class ShapClassificationExplainer:
@@ -116,7 +119,7 @@ class ShapClassificationExplainer:
 
 
 def fit_and_save_explainer(
-    train_data: pd.DataFrame, explainer_config_file_path: str, output_file_path: str
+    train_data: pd.DataFrame, explainer_config_file_path: str, save_dir_path: str
 ) -> None:
     """
     Fit the explainer to the training data and save it to a file.
@@ -124,7 +127,7 @@ def fit_and_save_explainer(
     Args:
         train_data (pd.DataFrame): pandas DataFrame of training data
         explainer_config_file_path (str): Path to the explainer configuration file.
-        output_file_path (str): Path where train data should be saved.
+        save_dir_path (str): Dir path where explainer should be saved.
 
     Returns:
         ShapClassificationExplainer: Instance of ShapClassificationExplainer
@@ -135,13 +138,25 @@ def fit_and_save_explainer(
         max_saved_train_data_length=explainer_config["max_saved_train_data_length"],
     )
     explainer.fit(train_data)
-    explainer.save(output_file_path)
+    if not os.path.exists(save_dir_path):
+        os.makedirs(save_dir_path)
+    explainer.save(os.path.join(save_dir_path, EXPLAINER_FILE_NAME))
     return explainer
 
 
-def load_explainer(file_path: str) -> Any:
-    """Load the explainer from a file."""
-    return ShapClassificationExplainer.load(file_path)
+def load_explainer(save_dir_path: str) -> Any:
+    """
+    Load the explainer from a file.
+
+    Args:
+        save_dir_path (str): Dir path where explainer is saved.
+
+    Returns:
+        ShapClassificationExplainer: Instance of ShapClassificationExplainer
+    """
+    return ShapClassificationExplainer.load(
+        os.path.join(save_dir_path, EXPLAINER_FILE_NAME)
+    )
 
 
 def get_explanations_from_explainer(
@@ -154,7 +169,8 @@ def get_explanations_from_explainer(
 
     Args:
         instances_df (pd.DataFrame): instances to explain predictions
-        explainer (ShapClassificationExplainer): Instance of ShapClassificationExplainer
+        explainer (ShapClassificationExplainer): Instance of
+                    ShapClassificationExplainer
         predictor_model (Any): A trained predictor model
         class_names List[str]: List of class names as strings
 

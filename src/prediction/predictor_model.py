@@ -1,3 +1,4 @@
+import os
 import warnings
 from typing import Optional
 
@@ -8,6 +9,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import NotFittedError
 
 warnings.filterwarnings("ignore")
+
+
+PREDICTOR_FILE_NAME = "predictor.joblib"
 
 
 class Classifier:
@@ -164,29 +168,30 @@ def predict_with_model(
     return classifier.predict(data)
 
 
-def save_predictor_model(model: Classifier, model_file_path: str) -> None:
+def save_predictor_model(model: Classifier, predictor_dir_path: str) -> None:
     """
     Save the classifier model to disk.
 
     Args:
         model (Classifier): The classifier model to save.
-        model_file_path (str): The full file path (dir + file name) to which to
-            save the model.
+        predictor_dir_path (str): Dir path to which to save the model.
     """
-    model.save(model_file_path)
+    if not os.path.exists(predictor_dir_path):
+        os.makedirs(predictor_dir_path)
+    model.save(os.path.join(predictor_dir_path, PREDICTOR_FILE_NAME))
 
 
-def load_predictor_model(model_fpath: str) -> Classifier:
+def load_predictor_model(predictor_dir_path: str) -> Classifier:
     """
     Load the classifier model from disk.
 
     Args:
-        model_fpath (str): The full path (dir + file name) to the saved model.
+        predictor_dir_path (str): Dir path where model is saved.
 
     Returns:
         Classifier: A new instance of the loaded classifier model.
     """
-    return Classifier.load(model_fpath)
+    return Classifier.load(os.path.join(predictor_dir_path, PREDICTOR_FILE_NAME))
 
 
 def evaluate_predictor_model(

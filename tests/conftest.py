@@ -302,21 +302,14 @@ def config_file_paths_dict(
 def resources_paths_dict(test_resources_dir_path, model_config_file_path):
     """Define a fixture for the paths to the test model resources."""
     return {
-        "saved_schema_path": os.path.join(test_resources_dir_path, "schema.joblib"),
-        "predictor_file_path": os.path.join(
-            test_resources_dir_path, "predictor.joblib"
-        ),
-        "pipeline_file_path": os.path.join(test_resources_dir_path, "pipeline.joblib"),
-        "target_encoder_file_path": os.path.join(
-            test_resources_dir_path, "target_encoder.joblib"
+        "saved_schema_dir_path": os.path.join(test_resources_dir_path, "schema"),
+        "predictor_dir_path": os.path.join(test_resources_dir_path, "predictor"),
+        "preprocessing_dir_path": os.path.join(
+            test_resources_dir_path, "preprocessing"
         ),
         "model_config_file_path": model_config_file_path,
-        "explainer_file_path": os.path.join(
-            test_resources_dir_path, "explainer.joblib"
-        ),
-        "hpt_results_file_path": os.path.join(
-            test_resources_dir_path, "hpt_results.csv"
-        ),
+        "explainer_dir_path": os.path.join(test_resources_dir_path, "explainer"),
+        "hpt_results_dir_path": os.path.join(test_resources_dir_path, "hpt"),
         "predictions_file_path": os.path.join(
             test_resources_dir_path, "predictions.csv"
         ),
@@ -425,30 +418,28 @@ def app(
     explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
 
     # Create temporary paths for all outputs/artifacts
-    saved_schema_path = resources_paths_dict["saved_schema_path"]
-    pipeline_file_path = resources_paths_dict["pipeline_file_path"]
-    target_encoder_file_path = resources_paths_dict["target_encoder_file_path"]
-    predictor_file_path = resources_paths_dict["predictor_file_path"]
-    hpt_results_file_path = resources_paths_dict["hpt_results_file_path"]
-    explainer_file_path = resources_paths_dict["explainer_file_path"]
+    saved_schema_dir_path = resources_paths_dict["saved_schema_dir_path"]
+    preprocessing_dir_path = resources_paths_dict["preprocessing_dir_path"]
+    predictor_dir_path = resources_paths_dict["predictor_dir_path"]
+    hpt_results_dir_path = resources_paths_dict["hpt_results_dir_path"]
+    explainer_dir_path = resources_paths_dict["explainer_dir_path"]
 
     # Run the training process without hyperparameter tuning
     run_tuning = False
     run_training(
         input_schema_dir=input_schema_dir,
-        saved_schema_path=saved_schema_path,
+        saved_schema_dir_path=saved_schema_dir_path,
         model_config_file_path=model_config_file_path,
         train_dir=train_dir,
         preprocessing_config_file_path=preprocessing_config_file_path,
-        pipeline_file_path=pipeline_file_path,
-        target_encoder_file_path=target_encoder_file_path,
-        predictor_file_path=predictor_file_path,
+        preprocessing_dir_path=preprocessing_dir_path,
+        predictor_dir_path=predictor_dir_path,
         default_hyperparameters_file_path=default_hyperparameters_file_path,
         run_tuning=run_tuning,
         hpt_specs_file_path=hpt_specs_file_path if run_tuning else None,
-        hpt_results_file_path=hpt_results_file_path if run_tuning else None,
+        hpt_results_dir_path=hpt_results_dir_path if run_tuning else None,
         explainer_config_file_path=explainer_config_file_path,
-        explainer_file_path=explainer_file_path,
+        explainer_dir_path=explainer_dir_path,
     )
 
     # create model resources dictionary

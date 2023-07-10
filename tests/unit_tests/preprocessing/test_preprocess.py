@@ -1,4 +1,4 @@
-from tempfile import TemporaryDirectory
+import os
 
 import numpy as np
 import pandas as pd
@@ -98,7 +98,7 @@ def test_transform_data_with_valid_split(
 
 
 def test_save_and_load_pipeline_and_target_encoder(
-    schema_provider, train_split_provider, preprocessing_config
+    tmpdir, schema_provider, train_split_provider, preprocessing_config
 ):
     """
     Test that the trained pipeline and target encoder can be saved and loaded correctly,
@@ -110,18 +110,16 @@ def test_save_and_load_pipeline_and_target_encoder(
     transformed_inputs, transformed_targets = transform_data(
         preprocess_pipeline, target_encoder, train_split_provider
     )
-    with TemporaryDirectory() as tempdir:
-        pipeline_fpath = tempdir + "/pipeline.pkl"
-        target_encoder_fpath = tempdir + "/target_encoder.pkl"
-        save_pipeline_and_target_encoder(
-            preprocess_pipeline, target_encoder, pipeline_fpath, target_encoder_fpath
-        )
-        (
-            loaded_preprocess_pipeline,
-            loaded_target_encoder,
-        ) = load_pipeline_and_target_encoder(pipeline_fpath, target_encoder_fpath)
-        assert loaded_preprocess_pipeline is not None
-        assert loaded_target_encoder is not None
+    preprecessing_dir = os.path.join(tmpdir, "preprocessing")
+    save_pipeline_and_target_encoder(
+        preprocess_pipeline, target_encoder, preprecessing_dir
+    )
+    (
+        loaded_preprocess_pipeline,
+        loaded_target_encoder,
+    ) = load_pipeline_and_target_encoder(preprecessing_dir)
+    assert loaded_preprocess_pipeline is not None
+    assert loaded_target_encoder is not None
     transformed_inputs_2, transformed_targets_2 = transform_data(
         loaded_preprocess_pipeline, loaded_target_encoder, train_split_provider
     )

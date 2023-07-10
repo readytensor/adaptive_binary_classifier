@@ -84,18 +84,18 @@ def hpt_specs_file_path(hpt_specs, tmpdir):
 
 
 @pytest.fixture
-def hpt_results_file_path(tmpdir):
+def hpt_results_dir_path(tmpdir):
     """Create a hpt-results-file-path fixture"""
-    return os.path.join(str(tmpdir), "hpt_results.csv")
+    return os.path.join(str(tmpdir), "hpt_outputs")
 
 
 @pytest.fixture
-def tuner(default_hyperparameters, hpt_specs, hpt_results_file_path):
+def tuner(default_hyperparameters, hpt_specs, hpt_results_dir_path):
     """Create a tuner fixture"""
     return SKOHyperparameterTuner(
         default_hyperparameters=default_hyperparameters,
         hpt_specs=hpt_specs,
-        hpt_results_file_path=hpt_results_file_path,
+        hpt_results_dir_path=hpt_results_dir_path,
     )
 
 
@@ -108,18 +108,18 @@ def mock_data():
     return train_X, train_y, valid_X, valid_y
 
 
-def test_init(default_hyperparameters, hpt_specs, hpt_results_file_path):
+def test_init(default_hyperparameters, hpt_specs, hpt_results_dir_path):
     """Tests the `__init__` method of the `SKOHyperparameterTuner` class.
 
     This test verifies that the `__init__` method correctly initializes the
     hyperparameter tuner object with the provided parameters.
     """
     tuner = SKOHyperparameterTuner(
-        default_hyperparameters, hpt_specs, hpt_results_file_path
+        default_hyperparameters, hpt_specs, hpt_results_dir_path
     )
     assert tuner.default_hyperparameters == default_hyperparameters
     assert tuner.hpt_specs == hpt_specs
-    assert tuner.hpt_results_file_path == hpt_results_file_path
+    assert tuner.hpt_results_dir_path == hpt_results_dir_path
     assert tuner.is_minimize is True
     assert tuner.num_trials == hpt_specs.get("num_trials", 20)
     assert tuner.hyperparameter_names == [
@@ -227,7 +227,7 @@ def test_get_best_hyperparameters(mocker, tuner):
     }
 
 
-def test_save_hpt_summary_results(mocker, tuner, tmpdir):
+def test_save_hpt_summary_results(mocker, tuner, hpt_results_dir_path):
     """Tests the `save_hpt_summary_results` method of the `SKOHyperparameterTuner` class.
 
     This test verifies that the `save_hpt_summary_results` method correctly saves
@@ -246,11 +246,10 @@ def test_save_hpt_summary_results(mocker, tuner, tmpdir):
     tuner.save_hpt_summary_results(mock_optimizer_results)
 
     # Check if the CSV file is created in the temporary directory
-    assert len(tmpdir.listdir()) == 1
-    assert tmpdir.join("hpt_results.csv").check()
+    assert len(os.listdir(hpt_results_dir_path)) == 1
 
     # Check the contents of the CSV file
-    df = pd.read_csv(tmpdir.join("hpt_results.csv"))
+    df = pd.read_csv(os.path.join(hpt_results_dir_path, "hpt_results.csv"))
     assert df.shape == (3, 7)
     assert (
         df.columns
@@ -269,7 +268,7 @@ def test_save_hpt_summary_results(mocker, tuner, tmpdir):
 def test_tune_hyperparameters(
     mocker,
     mock_data,
-    hpt_results_file_path,
+    hpt_results_dir_path,
     default_hyperparameters_file_path,
     default_hyperparameters,
     hpt_specs_file_path,
@@ -301,7 +300,7 @@ def test_tune_hyperparameters(
         mock_train_y,
         mock_valid_X,
         mock_valid_y,
-        hpt_results_file_path,
+        hpt_results_dir_path,
         is_minimize,
         default_hyperparameters_file_path,
         hpt_specs_file_path,
@@ -311,7 +310,7 @@ def test_tune_hyperparameters(
     mock_tuner.assert_called_once_with(
         default_hyperparameters=default_hyperparameters,
         hpt_specs=hpt_specs,
-        hpt_results_file_path=hpt_results_file_path,
+        hpt_results_dir_path=hpt_results_dir_path,
         is_minimize=is_minimize,
     )
     mock_tuner.return_value.run_hyperparameter_tuning.assert_called_once_with(

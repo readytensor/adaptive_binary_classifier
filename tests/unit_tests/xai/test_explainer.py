@@ -1,4 +1,4 @@
-from pathlib import Path
+import os
 from typing import Any, List
 
 import pytest
@@ -76,9 +76,9 @@ def test_save_and_load_explainer(
     """
     explainer = ShapClassificationExplainer(max_local_explanations=10)
     explainer.fit(transformed_train_inputs)
-    file_path = tmpdir.join("explainer.pkl")
-    explainer.save(file_path)
-    loaded_explainer = ShapClassificationExplainer.load(file_path)
+    explainer_dir_path = tmpdir.join("explainer")
+    explainer.save(explainer_dir_path)
+    loaded_explainer = ShapClassificationExplainer.load(explainer_dir_path)
     assert loaded_explainer is not None
     assert loaded_explainer._explainer_data.shape == transformed_train_inputs.shape
     assert loaded_explainer.max_local_explanations == 10
@@ -101,11 +101,11 @@ def test_fit_and_save_explainer(
 
     """
     explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
-    explainer_file_path = resources_paths_dict["explainer_file_path"]
+    explainer_dir_path = resources_paths_dict["explainer_dir_path"]
     explainer = fit_and_save_explainer(
-        transformed_train_inputs, explainer_config_file_path, explainer_file_path
+        transformed_train_inputs, explainer_config_file_path, explainer_dir_path
     )
-    assert Path(explainer_file_path).is_file()
+    assert len(os.listdir(explainer_dir_path)) == 1
     assert explainer is not None
     assert explainer._explainer_data.shape == transformed_train_inputs.shape
 
@@ -127,11 +127,11 @@ def test_load_explainer(
 
     """
     explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
-    explainer_file_path = resources_paths_dict["explainer_file_path"]
+    explainer_dir_path = resources_paths_dict["explainer_dir_path"]
     _ = fit_and_save_explainer(
-        transformed_train_inputs, explainer_config_file_path, explainer_file_path
+        transformed_train_inputs, explainer_config_file_path, explainer_dir_path
     )
-    loaded_explainer = load_explainer(explainer_file_path)
+    loaded_explainer = load_explainer(explainer_dir_path)
     assert loaded_explainer is not None
     assert loaded_explainer._explainer_data.shape == transformed_train_inputs.shape
 
@@ -158,9 +158,9 @@ def test_get_explanations_from_explainer(
 
     """
     explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
-    explainer_file_path = resources_paths_dict["explainer_file_path"]
+    explainer_dir_path = resources_paths_dict["explainer_dir_path"]
     explainer = fit_and_save_explainer(
-        transformed_test_inputs, explainer_config_file_path, explainer_file_path
+        transformed_test_inputs, explainer_config_file_path, explainer_dir_path
     )
     explanations = get_explanations_from_explainer(
         transformed_test_inputs, explainer, predictor, class_names
@@ -189,19 +189,21 @@ def test_explanations_from_loaded_explainer(
 
     Args:
         transformed_train_inputs (DataFrame): Transformed train inputs.
-        explainer_config_file_path (str): Path to the explainer configuration file.
-        explainer_file_path (str): Path where the explainer is to be saved.
+        config_file_paths_dict (dict): Dictionary containing the paths to the
+            configuration files.
+        resources_paths_dict (dict): Dictionary containing the paths to the
+            resources files such as trained models, encoders, and explainers.
         predictor (Any): A predictor model object.
         transformed_test_inputs (DataFrame): Transformed test inputs.
         class_names (List[str]): List of class names.
 
     """
     explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
-    explainer_file_path = resources_paths_dict["explainer_file_path"]
+    explainer_dir_path = resources_paths_dict["explainer_dir_path"]
     fit_and_save_explainer(
-        transformed_train_inputs, explainer_config_file_path, explainer_file_path
+        transformed_train_inputs, explainer_config_file_path, explainer_dir_path
     )
-    loaded_explainer = load_explainer(explainer_file_path)
+    loaded_explainer = load_explainer(explainer_dir_path)
     assert loaded_explainer._explainer_data.shape == transformed_train_inputs.shape
 
     explanations = get_explanations_from_explainer(

@@ -52,30 +52,28 @@ def test_integration_run_batch_predictions_without_hpt(
     explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
 
     # Create temporary paths for all outputs/artifacts
-    saved_schema_path = resources_paths_dict["saved_schema_path"]
-    pipeline_file_path = resources_paths_dict["pipeline_file_path"]
-    target_encoder_file_path = resources_paths_dict["target_encoder_file_path"]
-    predictor_file_path = resources_paths_dict["predictor_file_path"]
-    hpt_results_file_path = resources_paths_dict["hpt_results_file_path"]
-    explainer_file_path = resources_paths_dict["explainer_file_path"]
+    saved_schema_dir_path = resources_paths_dict["saved_schema_dir_path"]
+    preprocessing_dir_path = resources_paths_dict["preprocessing_dir_path"]
+    predictor_dir_path = resources_paths_dict["predictor_dir_path"]
+    hpt_results_dir_path = resources_paths_dict["hpt_results_dir_path"]
+    explainer_dir_path = resources_paths_dict["explainer_dir_path"]
 
     # Run the training process without hyperparameter tuning
     run_tuning = False
     run_training(
         input_schema_dir=input_schema_dir,
-        saved_schema_path=saved_schema_path,
+        saved_schema_dir_path=saved_schema_dir_path,
         model_config_file_path=model_config_file_path,
         train_dir=train_dir,
         preprocessing_config_file_path=preprocessing_config_file_path,
-        pipeline_file_path=pipeline_file_path,
-        target_encoder_file_path=target_encoder_file_path,
-        predictor_file_path=predictor_file_path,
+        preprocessing_dir_path=preprocessing_dir_path,
+        predictor_dir_path=predictor_dir_path,
         default_hyperparameters_file_path=default_hyperparameters_file_path,
         run_tuning=run_tuning,
         hpt_specs_file_path=hpt_specs_file_path if run_tuning else None,
-        hpt_results_file_path=hpt_results_file_path if run_tuning else None,
+        hpt_results_dir_path=hpt_results_dir_path if run_tuning else None,
         explainer_config_file_path=explainer_config_file_path,
-        explainer_file_path=explainer_file_path,
+        explainer_dir_path=explainer_dir_path,
     )
 
     # Get temporary path for prediction
@@ -83,12 +81,11 @@ def test_integration_run_batch_predictions_without_hpt(
 
     # Run the prediction process
     run_batch_predictions(
-        saved_schema_path=saved_schema_path,
+        saved_schema_dir_path=saved_schema_dir_path,
         model_config_file_path=model_config_file_path,
         test_dir=test_dir,
-        pipeline_file_path=pipeline_file_path,
-        target_encoder_file_path=target_encoder_file_path,
-        predictor_file_path=predictor_file_path,
+        preprocessing_dir_path=preprocessing_dir_path,
+        predictor_dir_path=predictor_dir_path,
         predictions_file_path=predictions_file_path,
     )
 

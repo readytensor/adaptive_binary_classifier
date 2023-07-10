@@ -1,3 +1,4 @@
+import os
 import random
 from typing import Any, Dict, Tuple, Union
 
@@ -19,6 +20,9 @@ from preprocessing.target_encoder import (
     train_target_encoder,
     transform_targets,
 )
+
+PIPELINE_FILE_NAME = "pipeline.joblib"
+TARGET_ENCODER_FILE_NAME = "target_encoder.joblib"
 
 
 def train_pipeline_and_target_encoder(
@@ -70,10 +74,7 @@ def transform_data(
 
 
 def save_pipeline_and_target_encoder(
-    preprocess_pipeline: Any,
-    target_encoder: Any,
-    pipeline_fpath: str,
-    target_encoder_fpath: str,
+    preprocess_pipeline: Any, target_encoder: Any, preprocessing_dir_path: str
 ) -> None:
     """
     Save the preprocessing pipeline and target encoder to files.
@@ -81,32 +82,46 @@ def save_pipeline_and_target_encoder(
     Args:
         preprocess_pipeline: The preprocessing pipeline.
         target_encoder: The target encoder.
-        pipeline_fpath (str): full path where the pipeline is to be saved
-        label_encoder_fpath (str): full path where the label encoder is to be saved
+        preprocessing_dir_path (str): dir path where the pipeline and target encoder
+            is to be saved
 
     """
-    save_pipeline(pipeline=preprocess_pipeline, file_path_and_name=pipeline_fpath)
+    if not os.path.exists(preprocessing_dir_path):
+        os.makedirs(preprocessing_dir_path)
+    save_pipeline(
+        pipeline=preprocess_pipeline,
+        file_path_and_name=os.path.join(preprocessing_dir_path, PIPELINE_FILE_NAME),
+    )
     save_target_encoder(
-        target_encoder=target_encoder, file_path_and_name=target_encoder_fpath
+        target_encoder=target_encoder,
+        file_path_and_name=os.path.join(
+            preprocessing_dir_path, TARGET_ENCODER_FILE_NAME
+        ),
     )
 
 
 def load_pipeline_and_target_encoder(
-    pipeline_fpath: str, target_encoder_fpath: str
+    preprocessing_dir_path: str,
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Load the preprocessing pipeline and target encoder
 
     Args:
-        pipeline_fpath (str): full path where the pipeline is saved
-        target_encoder_fpath (str): full path where the target encoder is saved
+        preprocessing_dir_path (str): dir path where the pipeline and target encoder
+            are saved
 
     Returns:
         Tuple[pd.DataFrame, pd.DataFrame]: A tuple containing the preprocessing
             pipeline and target encoder.
     """
-    preprocess_pipeline = load_pipeline(file_path_and_name=pipeline_fpath)
-    target_encoder = load_target_encoder(file_path_and_name=target_encoder_fpath)
+    preprocess_pipeline = load_pipeline(
+        file_path_and_name=os.path.join(preprocessing_dir_path, PIPELINE_FILE_NAME)
+    )
+    target_encoder = load_target_encoder(
+        file_path_and_name=os.path.join(
+            preprocessing_dir_path, TARGET_ENCODER_FILE_NAME
+        )
+    )
     return preprocess_pipeline, target_encoder
 
 

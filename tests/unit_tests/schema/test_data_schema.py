@@ -1,6 +1,14 @@
+import os
+
 import pytest
 
-from src.schema.data_schema import BinaryClassificationSchema
+from src.schema.data_schema import (
+    SCHEMA_FILE_NAME,
+    BinaryClassificationSchema,
+    load_json_data_schema,
+    load_saved_schema,
+    save_schema,
+)
 
 
 def test_init():
@@ -221,3 +229,45 @@ def test_is_feature_nullable():
     # When / Then
     with pytest.raises(ValueError):
         schema.is_feature_nullable("Invalid feature")
+
+
+def test_load_json_data_schema(input_schema_dir):
+    """
+    Test the method to load a schema from a JSON file.
+    Asserts that the properties of the schema object match the input schema dictionary.
+    """
+    # Given input_schema_dir
+
+    # When
+    schema = load_json_data_schema(input_schema_dir)
+
+    # Then
+    assert isinstance(schema, BinaryClassificationSchema)
+    assert schema.model_category == "binary_classification"
+
+
+def test_save_and_load_schema(tmpdir, schema_provider):
+
+    # Save the schema using the save_schema function
+    save_dir_path = str(tmpdir)
+    save_schema(schema_provider, save_dir_path)
+
+    # Check if file was saved correctly
+    file_path = os.path.join(save_dir_path, SCHEMA_FILE_NAME)
+    assert os.path.isfile(file_path)
+
+    # Load the schema using the load_saved_schema function
+    loaded_schema = load_saved_schema(save_dir_path)
+
+    # Check if the loaded schema is an instance of BinaryClassificationSchema
+    assert isinstance(loaded_schema, BinaryClassificationSchema)
+    assert loaded_schema.model_category == "binary_classification"
+
+
+def test_load_saved_schema_nonexistent_file(tmpdir):
+    # Try to load the schema from a non-existent file
+    save_dir_path = os.path.join(tmpdir, "non_existent")
+
+    with pytest.raises(FileNotFoundError):
+        returned = load_saved_schema(save_dir_path)
+        print(returned)

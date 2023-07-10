@@ -84,57 +84,6 @@ def mounted_volume(
     return str(base_dir)
 
 
-# @pytest.fixture
-# def mounted_volume_for_inference(
-#         tmpdir: str,
-#         train_dir: str,
-#         train_data_file_name: str,
-#         test_dir: str,
-#         test_data_file_name: str,
-#         input_schema_dir: str,
-#         input_schema_file_name: str,
-#     ) -> str:
-#     """
-#     Prepares and returns a directory with a specific structure and files
-#     for the inference task.
-
-#     Args:
-#         tmpdir (str): Pytest fixture for creating temporary directories.
-#         train_dir (str): Path to the training data directory.
-#         train_data_file_name (str): Name of the training data file.
-#         test_dir (str): Path to the testing data directory.
-#         test_data_file_name (str): Name of the testing data file.
-#         input_schema_dir (str): Path to the schema directory.
-#         input_schema_file_name (str): Name of the schema file.
-
-#     Returns:
-#         str: Path to the prepared directory.
-#     """
-#     base_dir = tmpdir.mkdir("model_inputs_outputs")
-#     # Create the necessary directories
-#     input_dir = base_dir.mkdir("inputs")
-#     input_data_dir = input_dir.mkdir("data")
-#     mounted_training_dir = input_data_dir.mkdir("training")
-#     mounted_testing_dir = input_data_dir.mkdir("testing")
-#     mounted_schema_dir = input_dir.mkdir("schema")
-#     base_dir.mkdir("model").mkdir("artifacts")
-#     output_dir = base_dir.mkdir("outputs")
-#     output_dir.mkdir("errors")
-#     output_dir.mkdir("hpt_outputs")
-#     output_dir.mkdir("predictions")
-
-#     # Move the necessary files to the created directories
-#     move_files_to_temp_dir(
-#         input_schema_dir, str(mounted_schema_dir), [input_schema_file_name]
-#     )
-#     move_files_to_temp_dir(
-#         train_dir, str(mounted_training_dir), [train_data_file_name]
-#     )
-#     move_files_to_temp_dir(test_dir, str(mounted_testing_dir), [test_data_file_name])
-
-#     return str(base_dir)
-
-
 @pytest.fixture
 def image_name():
     """Fixture that returns the name of the Docker image to be used in testing.

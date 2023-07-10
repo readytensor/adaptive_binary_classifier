@@ -82,12 +82,11 @@ def run_training_and_record(
         execution metrics (time and memory).
     """
     # Create temporary paths for output files/artifacts
-    saved_schema_path = str(tmpdir.join("saved_schema.json"))
-    pipeline_file_path = str(tmpdir.join("pipeline.joblib"))
-    target_encoder_file_path = str(tmpdir.join("target_encoder.joblib"))
-    predictor_file_path = str(tmpdir.join("predictor.joblib"))
-    hpt_results_file_path = str(tmpdir.join("hpt_results.csv"))
-    explainer_file_path = str(tmpdir.join("explainer.joblib"))
+    saved_schema_dir_path = str(tmpdir.join("saved_schema"))
+    preprocessing_dir_path = str(tmpdir.join("pipeline"))
+    predictor_dir_path = str(tmpdir.join("predictor"))
+    hpt_results_dir_path = str(tmpdir.join("hpt_results"))
+    explainer_dir_path = str(tmpdir.join("explainer"))
 
     # Start recording
     start_time = time.perf_counter()
@@ -96,19 +95,18 @@ def run_training_and_record(
     # Run the training process with tuning
     run_training(
         input_schema_dir=input_schema_dir,
-        saved_schema_path=saved_schema_path,
+        saved_schema_dir_path=saved_schema_dir_path,
         model_config_file_path=model_config_file_path,
         train_dir=train_dir,
         preprocessing_config_file_path=preprocessing_config_file_path,
-        pipeline_file_path=pipeline_file_path,
-        target_encoder_file_path=target_encoder_file_path,
-        predictor_file_path=predictor_file_path,
+        preprocessing_dir_path=preprocessing_dir_path,
+        predictor_dir_path=predictor_dir_path,
         default_hyperparameters_file_path=default_hyperparameters_file_path,
         run_tuning=True,
         hpt_specs_file_path=hpt_specs_file_path,
-        hpt_results_file_path=hpt_results_file_path,
+        hpt_results_dir_path=hpt_results_dir_path,
         explainer_config_file_path=explainer_config_file_path,
-        explainer_file_path=explainer_file_path,
+        explainer_dir_path=explainer_dir_path,
     )
 
     # Stop recording
@@ -121,12 +119,11 @@ def run_training_and_record(
     tracemalloc.stop()
 
     result_dict = {
-        "saved_schema_path": saved_schema_path,
-        "pipeline_file_path": pipeline_file_path,
-        "target_encoder_file_path": target_encoder_file_path,
-        "predictor_file_path": predictor_file_path,
-        "hpt_results_file_path": hpt_results_file_path,
-        "explainer_file_path": explainer_file_path,
+        "saved_schema_dir_path": saved_schema_dir_path,
+        "preprocessing_dir_path": preprocessing_dir_path,
+        "predictor_dir_path": predictor_dir_path,
+        "hpt_results_dir_path": hpt_results_dir_path,
+        "explainer_dir_path": explainer_dir_path,
         "training_time": end_time - start_time,
         "training_memory": memory,
     }
@@ -136,21 +133,19 @@ def run_training_and_record(
 
 def run_prediction_and_record(
     tmpdir,
-    saved_schema_path: str,
-    pipeline_file_path: str,
-    target_encoder_file_path: str,
-    predictor_file_path: str,
+    saved_schema_dir_path: str,
+    preprocessing_dir_path: str,
+    predictor_dir_path: str,
     model_config_file_path: str,
     test_dir: str,
 ) -> Tuple[str, float, float]:
     """Run prediction process and record the memory usage and execution time.
 
     Args:
-        tmpdir: Temporary directoryc.
-        saved_schema_path (str): Path to saved schema.
-        pipeline_file_path (str): Path to pipeline file.
-        target_encoder_file_path (str): Path to target encoder file.
-        predictor_file_path (str): Path to predictor file.
+        tmpdir: Temporary directory.
+        saved_schema_dir_path (str): Path to saved schema.
+        preprocessing_dir_path (str): Path to pipeline file.
+        predictor_dir_path (str): Path to predictor file.
         model_config_file_path (str): Path to model configuration file.
         test_dir (str): Path to testing data directory.
 
@@ -168,12 +163,11 @@ def run_prediction_and_record(
 
     # Run the prediction process
     run_batch_predictions(
-        saved_schema_path=saved_schema_path,
+        saved_schema_dir_path=saved_schema_dir_path,
         model_config_file_path=model_config_file_path,
         test_dir=test_dir,  # re-using the train data for prediction
-        pipeline_file_path=pipeline_file_path,
-        target_encoder_file_path=target_encoder_file_path,
-        predictor_file_path=predictor_file_path,
+        preprocessing_dir_path=preprocessing_dir_path,
+        predictor_dir_path=predictor_dir_path,
         predictions_file_path=predictions_file_path,
     )
 
@@ -192,11 +186,7 @@ def run_prediction_and_record(
 @pytest.mark.slow
 def test_train_predict_performance(
     tmpdir,
-    model_config_file_path: str,
-    preprocessing_config_file_path: str,
-    default_hyperparameters_file_path: str,
-    hpt_specs_file_path: str,
-    explainer_config_file_path: str,
+    config_file_paths_dict: dict,
     train_predict_perf_results_path: str,
 ):
     """Test the training and prediction workflows while recording performance.
@@ -208,14 +198,21 @@ def test_train_predict_performance(
 
     Args:
         tmpdir: Temporary directory.
-        model_config_file_path (str): Path to model configuration file.
-        preprocessing_config_file_path (str): Path to pipeline configuration file.
-        default_hyperparameters_file_path (str): Path to default hyperparameters file.
-        hpt_specs_file_path (str): Path to hyperparameter tuning specifications file.
-        explainer_config_file_path (str): Path to explainer configuration file.
+        config_file_paths_dict (dict): Dictionary containing the paths to the
+            configuration files.
         train_predict_perf_results_path (str): Path to the file where training and
         prediction performance results will be stored.
     """
+    # extract paths to all config files
+    model_config_file_path = config_file_paths_dict["model_config_file_path"]
+    preprocessing_config_file_path = config_file_paths_dict[
+        "preprocessing_config_file_path"
+    ]
+    default_hyperparameters_file_path = config_file_paths_dict[
+        "default_hyperparameters_file_path"
+    ]
+    hpt_specs_file_path = config_file_paths_dict["hpt_specs_file_path"]
+    explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
 
     # If the results file already exists, delete it
     delete_file_if_exists(train_predict_perf_results_path)
@@ -247,12 +244,11 @@ def test_train_predict_performance(
         )
 
         # Assert that the model artifacts are saved in the correct paths
-        assert os.path.isfile(results["saved_schema_path"])
-        assert os.path.isfile(results["pipeline_file_path"])
-        assert os.path.isfile(results["target_encoder_file_path"])
-        assert os.path.isfile(results["predictor_file_path"])
-        assert os.path.isfile(results["hpt_results_file_path"])
-        assert os.path.isfile(results["explainer_file_path"])
+        assert len(os.listdir(results["saved_schema_dir_path"])) >= 1
+        assert len(os.listdir(results["preprocessing_dir_path"])) >= 1
+        assert len(os.listdir(results["predictor_dir_path"])) >= 1
+        assert len(os.listdir(results["hpt_results_dir_path"])) >= 1
+        assert len(os.listdir(results["explainer_dir_path"])) >= 1
 
         # Store training workflow performance metrics
         store_results_to_csv(
@@ -274,10 +270,9 @@ def test_train_predict_performance(
             prediction_memory,
         ) = run_prediction_and_record(
             tmpdir,
-            results["saved_schema_path"],
-            results["pipeline_file_path"],
-            results["target_encoder_file_path"],
-            results["predictor_file_path"],
+            results["saved_schema_dir_path"],
+            results["preprocessing_dir_path"],
+            results["predictor_dir_path"],
             model_config_file_path,
             train_dir,
         )

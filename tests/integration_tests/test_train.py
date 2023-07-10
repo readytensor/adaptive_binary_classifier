@@ -45,36 +45,33 @@ def test_run_training(
     explainer_config_file_path = config_file_paths_dict["explainer_config_file_path"]
 
     # Create temporary paths for all outputs/artifacts
-    saved_schema_path = resources_paths_dict["saved_schema_path"]
-    pipeline_file_path = resources_paths_dict["pipeline_file_path"]
-    target_encoder_file_path = resources_paths_dict["target_encoder_file_path"]
-    predictor_file_path = resources_paths_dict["predictor_file_path"]
-    hpt_results_file_path = resources_paths_dict["hpt_results_file_path"]
-    explainer_file_path = resources_paths_dict["explainer_file_path"]
+    saved_schema_dir_path = resources_paths_dict["saved_schema_dir_path"]
+    preprocessing_dir_path = resources_paths_dict["preprocessing_dir_path"]
+    predictor_dir_path = resources_paths_dict["predictor_dir_path"]
+    hpt_results_dir_path = resources_paths_dict["hpt_results_dir_path"]
+    explainer_dir_path = resources_paths_dict["explainer_dir_path"]
 
     # Run the training process without tuning
     run_training(
         input_schema_dir=input_schema_dir,
-        saved_schema_path=saved_schema_path,
+        saved_schema_dir_path=saved_schema_dir_path,
         model_config_file_path=model_config_file_path,
         train_dir=train_dir,
         preprocessing_config_file_path=preprocessing_config_file_path,
-        pipeline_file_path=pipeline_file_path,
-        target_encoder_file_path=target_encoder_file_path,
-        predictor_file_path=predictor_file_path,
+        preprocessing_dir_path=preprocessing_dir_path,
+        predictor_dir_path=predictor_dir_path,
         default_hyperparameters_file_path=default_hyperparameters_file_path,
         run_tuning=run_tuning,
         hpt_specs_file_path=hpt_specs_file_path if run_tuning else None,
-        hpt_results_file_path=hpt_results_file_path if run_tuning else None,
+        hpt_results_dir_path=hpt_results_dir_path if run_tuning else None,
         explainer_config_file_path=explainer_config_file_path,
-        explainer_file_path=explainer_file_path,
+        explainer_dir_path=explainer_dir_path,
     )
 
     # Assert that the model artifacts are saved in the correct paths
-    assert os.path.isfile(saved_schema_path)
-    assert os.path.isfile(pipeline_file_path)
-    assert os.path.isfile(target_encoder_file_path)
-    assert os.path.isfile(predictor_file_path)
-    assert os.path.isfile(explainer_file_path)
+    assert len(os.listdir((saved_schema_dir_path))) >= 1
+    assert len(os.listdir((preprocessing_dir_path))) >= 1
+    assert len(os.listdir((predictor_dir_path))) >= 1
+    assert len(os.listdir((explainer_dir_path))) >= 1
     if run_tuning:
-        assert os.path.isfile(hpt_results_file_path)
+        assert len(os.listdir((hpt_results_dir_path))) >= 1

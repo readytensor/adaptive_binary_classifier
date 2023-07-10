@@ -60,12 +60,11 @@ def create_predictions_dataframe(
 
 
 def run_batch_predictions(
-    saved_schema_path: str = paths.SAVED_SCHEMA_PATH,
+    saved_schema_dir_path: str = paths.SAVED_SCHEMA_DIR_PATH,
     model_config_file_path: str = paths.MODEL_CONFIG_FILE_PATH,
     test_dir: str = paths.TEST_DIR,
-    pipeline_file_path: str = paths.PIPELINE_FILE_PATH,
-    target_encoder_file_path: str = paths.TARGET_ENCODER_FILE_PATH,
-    predictor_file_path: str = paths.PREDICTOR_FILE_PATH,
+    preprocessing_dir_path: str = paths.PREPROCESSING_DIR_PATH,
+    predictor_dir_path: str = paths.PREDICTOR_DIR_PATH,
     predictions_file_path: str = paths.PREDICTIONS_FILE_PATH,
 ) -> None:
     """
@@ -79,7 +78,7 @@ def run_batch_predictions(
     and saves the predictions as a CSV file.
 
     Args:
-        saved_schema_path (str): Path to the saved data schema.
+        saved_schema_dir_path (str): Dir path to the saved data schema.
         model_config_file_path (str): Path to the model configuration file.
         test_dir (str): Directory path for the test data.
         pipeline_file_path (str): Path to the saved pipeline file.
@@ -92,7 +91,7 @@ def run_batch_predictions(
         logger.info("Making batch predictions...")
 
         logger.info("Loading schema...")
-        data_schema = load_saved_schema(saved_schema_path)
+        data_schema = load_saved_schema(saved_schema_dir_path)
 
         logger.info("Loading model config...")
         model_config = read_json_as_dict(model_config_file_path)
@@ -108,7 +107,7 @@ def run_batch_predictions(
 
         logger.info("Loading pipeline and encoder...")
         preprocessor, target_encoder = load_pipeline_and_target_encoder(
-            pipeline_file_path, target_encoder_file_path
+            preprocessing_dir_path
         )
 
         logger.info("Transforming prediction inputs ...")
@@ -117,7 +116,7 @@ def run_batch_predictions(
         )
 
         logger.info("Loading predictor model...")
-        predictor_model = load_predictor_model(predictor_file_path)
+        predictor_model = load_predictor_model(predictor_dir_path)
 
         logger.info("Making predictions...")
         predictions_arr = predict_with_model(

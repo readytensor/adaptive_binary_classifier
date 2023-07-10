@@ -22,52 +22,49 @@ logger = get_logger(task_name="serve")
 class ModelResources:
     def __init__(
         self,
-        saved_schema_path: str,
+        saved_schema_dir_path: str,
         model_config_file_path: str,
-        pipeline_file_path: str,
-        target_encoder_file_path: str,
-        predictor_file_path: str,
-        explainer_file_path: str,
+        preprocessing_dir_path: str,
+        predictor_dir_path: str,
+        explainer_dir_path: str,
     ):
-        self.data_schema = load_saved_schema(saved_schema_path)
+        self.data_schema = load_saved_schema(saved_schema_dir_path)
         self.model_config = read_json_as_dict(model_config_file_path)
-        self.predictor_model = load_predictor_model(predictor_file_path)
+        self.predictor_model = load_predictor_model(predictor_dir_path)
         self.preprocessor, self.target_encoder = load_pipeline_and_target_encoder(
-            pipeline_file_path, target_encoder_file_path
+            preprocessing_dir_path
         )
-        self.explainer = load_explainer(explainer_file_path)
+        self.explainer = load_explainer(explainer_dir_path)
 
 
 def get_model_resources(
-    saved_schema_path: str = paths.SAVED_SCHEMA_PATH,
+    saved_schema_dir_path: str = paths.SAVED_SCHEMA_DIR_PATH,
     model_config_file_path: str = paths.MODEL_CONFIG_FILE_PATH,
-    pipeline_file_path: str = paths.PIPELINE_FILE_PATH,
-    target_encoder_file_path: str = paths.TARGET_ENCODER_FILE_PATH,
-    predictor_file_path: str = paths.PREDICTOR_FILE_PATH,
-    explainer_file_path: str = paths.EXPLAINER_FILE_PATH,
+    preprocessing_dir_path: str = paths.PREPROCESSING_DIR_PATH,
+    predictor_dir_path: str = paths.PREDICTOR_DIR_PATH,
+    explainer_dir_path: str = paths.EXPLAINER_DIR_PATH,
     **kwargs,
 ) -> ModelResources:
     """
     Returns an instance of ModelResources.
 
     Args:
-        saved_schema_path (str): Path to the saved data schema.
+        saved_schema_dir_path (str): Dir path to the saved data schema.
         model_config_file_path (str): Path to the model configuration file.
-        pipeline_file_path (str): Path to the saved pipeline file.
-        target_encoder_file_path (str): Path to the saved target encoder file.
-        predictor_file_path (str): Path to the saved predictor model file.
-        explainer_file_path (str): Path to the saved explainer.
+        preprocessing_dir_path (str): he dir path where to save the pipeline
+            and target encoder.
+        predictor_dir_path (str): Path to the saved predictor model file.
+        explainer_dir_path (str): Dir path where explainer is saved.
     Returns:
         Loaded ModelResources object
     """
     try:
         model_resources = ModelResources(
-            saved_schema_path,
+            saved_schema_dir_path,
             model_config_file_path,
-            pipeline_file_path,
-            target_encoder_file_path,
-            predictor_file_path,
-            explainer_file_path,
+            preprocessing_dir_path,
+            predictor_dir_path,
+            explainer_dir_path,
         )
     except Exception as exc:
         err_msg = "Error occurred loading model for serving."

@@ -1,9 +1,12 @@
+import os
 from typing import Dict, List, Tuple
 
 import joblib
 
 from data_models.schema_validator import validate_schema_dict
 from utils import read_json_as_dict
+
+SCHEMA_FILE_NAME = "schema.joblib"
 
 
 class BinaryClassificationSchema:
@@ -345,25 +348,32 @@ def load_json_data_schema(schema_dir_path: str) -> BinaryClassificationSchema:
     return data_schema
 
 
-def save_schema(schema: BinaryClassificationSchema, output_path: str) -> None:
+def save_schema(schema: BinaryClassificationSchema, save_dir_path: str) -> None:
     """
     Save the schema to a JSON file.
 
     Args:
         schema (BinaryClassificationSchema): The schema to be saved.
-        output_path (str): The path to save the schema to.
+        save_dir_path (str): The dir path to save the schema to.
     """
-    joblib.dump(schema, output_path)
+    if not os.path.exists(save_dir_path):
+        os.makedirs(save_dir_path)
+    file_path = os.path.join(save_dir_path, SCHEMA_FILE_NAME)
+    joblib.dump(schema, file_path)
 
 
-def load_saved_schema(input_path: str) -> BinaryClassificationSchema:
+def load_saved_schema(save_dir_path: str) -> BinaryClassificationSchema:
     """
     Load the saved schema from a JSON file.
 
     Args:
-        input_path (str): The path to load the schema from.
+        save_dir_path (str): The path to load the schema from.
 
     Returns:
         BinaryClassificationSchema: An instance of the BinaryClassificationSchema.
     """
-    return joblib.load(input_path)
+    file_path = os.path.join(save_dir_path, SCHEMA_FILE_NAME)
+    if not os.path.exists(file_path):
+        print("no such file")
+        raise FileNotFoundError(f"No such file or directory: '{file_path}'")
+    return joblib.load(file_path)
