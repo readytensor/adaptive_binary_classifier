@@ -5,7 +5,9 @@ from typing import Any, Callable, Dict, List, Union
 import numpy as np
 import pandas as pd
 from skopt import gp_minimize
+from skopt.callbacks import EarlyStopper
 from skopt.space import Categorical, Integer, Real
+
 
 from config import paths
 from logger import get_logger
@@ -18,9 +20,41 @@ logger = get_logger(task_name="tune")
 
 
 def logger_callback(res):
+    """
+    Logger callback for the hyperparameter tuning trials.
+
+    Logs each trial to the logger including:
+        - Iteration number
+        - Current hyperparameter trial
+        - Current trial objective function value
+        - Best hyperparameters found so far
+        - Best objective function value found so far
+    """
     logger.info(f"Iteration: {len(res.x_iters)}")
-    logger.info(f"Trial hyperparameters: {res.x}")
-    logger.info(f"Objective func value: {res.fun}")
+    logger.info(f"Current trial hyperparameters: {res.x_iters[-1]}")
+    logger.info(f"Current trial obj func value: {res.func_vals[-1]}")
+    logger.info(f"Best trial hyperparameters: {res.x}")
+    logger.info(f"Best objective func value: {res.fun}")
+
+
+class StoppingCriterion(EarlyStopper):
+    """Stop Bayesian Optimization if improvement doesnt exceed delta %
+        for n_best iterations.
+
+    """
+    def __init__(self, delta=0.03, n_best=5):
+        super(EarlyStopper, self).__init__()
+        self.delta = delta
+        self.n_best = n_best
+
+    def _criterion(self, result):
+        if len(result.func_vals) >= self.n_best:
+            func_vals = np.sort(result.func_vals)
+            worst = func_vals[self.n_best - 1]
+            best = func_vals[0]
+            improvement = abs((best - worst)/worst)
+            return improvement <= self.delta
+        return False
 
 
 class SKOHyperparameterTuner:
@@ -186,7 +220,7 @@ class SKOHyperparameterTuner:
             # Number of calls to `func`,
             n_calls=self.num_trials,
             random_state=0,
-            callback=[logger_callback],
+            callback=[logger_callback, StoppingCriterion(delta=0.03, n_best=5)],
             verbose=False,
         )
         self.save_hpt_summary_results(optimizer_results)
