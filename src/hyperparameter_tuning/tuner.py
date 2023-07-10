@@ -8,7 +8,6 @@ from skopt import gp_minimize
 from skopt.callbacks import EarlyStopper
 from skopt.space import Categorical, Integer, Real
 
-
 from config import paths
 from logger import get_logger
 from prediction.predictor_model import evaluate_predictor_model, train_predictor_model
@@ -39,9 +38,10 @@ def logger_callback(res):
 
 class StoppingCriterion(EarlyStopper):
     """Stop Bayesian Optimization if improvement doesnt exceed delta %
-        for n_best iterations.
+    for n_best iterations.
 
     """
+
     def __init__(self, delta=0.03, n_best=5):
         super(EarlyStopper, self).__init__()
         self.delta = delta
@@ -52,7 +52,7 @@ class StoppingCriterion(EarlyStopper):
             func_vals = np.sort(result.func_vals)
             worst = func_vals[self.n_best - 1]
             best = func_vals[0]
-            improvement = abs((best - worst)/worst)
+            improvement = abs((best - worst) / worst)
             return improvement <= self.delta
         return False
 
