@@ -46,6 +46,7 @@ class Classifier:
         self.min_samples_split = int(min_samples_split)
         self.min_samples_leaf = int(min_samples_leaf)
         self.model = self.build_model()
+        self._is_trained = False
 
     def build_model(self) -> RandomForestClassifier:
         """Build a new Random Forest binary classifier."""
@@ -65,6 +66,7 @@ class Classifier:
             train_targets (pandas.Series): The labels of the training data.
         """
         self.model.fit(train_inputs, train_targets)
+        self._is_trained = True
 
     def predict(self, inputs: pd.DataFrame) -> np.ndarray:
         """Predict class labels for the given data.
@@ -99,33 +101,34 @@ class Classifier:
             return self.model.score(test_inputs, test_targets)
         raise NotFittedError("Model is not fitted yet.")
 
-    def save(self, model_file_path: str) -> None:
+    def save(self, model_dir_path: str) -> None:
         """Save the Random Forest binary classifier to disk.
 
         Args:
-            model_file_path (str): The full file path (dir + file name) to which
-                to save the model.
+            model_dir_path (str): Dir path to which to save the model.
         """
-        joblib.dump(self, model_file_path)
+        if not self._is_trained:
+            raise NotFittedError("Model is not fitted yet.")
+        joblib.dump(self, os.path.join(model_dir_path, PREDICTOR_FILE_NAME))
 
     @classmethod
-    def load(cls, model_file_path: str) -> "Classifier":
+    def load(cls, model_dir_path: str) -> "Classifier":
         """Load the Random Forest binary classifier from disk.
 
         Args:
-            model_file_path (str): The path to the saved model.
+            model_dir_path (str): Dir path to the saved model.
         Returns:
             Classifier: A new instance of the loaded Random Forest binary classifier.
         """
-        model = joblib.load(model_file_path)
+        model = joblib.load(os.path.join(model_dir_path, PREDICTOR_FILE_NAME))
         return model
 
     def __str__(self):
         return (
             f"Model name: {self.model_name}("
             f"n_estimators: {self.n_estimators}, "
-            f"n_estimators: {self.min_samples_split}, "
-            f"n_estimators: {self.min_samples_leaf})"
+            f"min_samples_split: {self.min_samples_split}, "
+            f"min_samples_leaf: {self.min_samples_leaf})"
         )
 
 
@@ -178,7 +181,7 @@ def save_predictor_model(model: Classifier, predictor_dir_path: str) -> None:
     """
     if not os.path.exists(predictor_dir_path):
         os.makedirs(predictor_dir_path)
-    model.save(os.path.join(predictor_dir_path, PREDICTOR_FILE_NAME))
+    model.save(predictor_dir_path)
 
 
 def load_predictor_model(predictor_dir_path: str) -> Classifier:
@@ -191,7 +194,7 @@ def load_predictor_model(predictor_dir_path: str) -> Classifier:
     Returns:
         Classifier: A new instance of the loaded classifier model.
     """
-    return Classifier.load(os.path.join(predictor_dir_path, PREDICTOR_FILE_NAME))
+    return Classifier.load(predictor_dir_path)
 
 
 def evaluate_predictor_model(
